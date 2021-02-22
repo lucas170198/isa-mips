@@ -1,6 +1,8 @@
 (ns isa-mips.helpers
-  (:require [schema.core :as s]))
+  (:require []))
 
-(s/defn hex->num :- s/Int
-  [s :- s/Str]
-  (Integer/parseInt (.substring s 2) 16))
+(defn register-class
+  [prefix init-idx vector]
+  (into {} (map-indexed (fn [idx _]
+                          {(+ idx init-idx) {:name  (str prefix idx)
+                                             :value 0}}) vector)))

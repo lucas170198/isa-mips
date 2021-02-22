@@ -1,7 +1,10 @@
 (ns isa-mips.core
-  (:gen-class))
+  (:require [isa-mips.adapters.file-input :as a.file-input]
+            [isa-mips.handler :as handler]))
+
 
 (defn -main
-  "I don't do a whole lot ... yet."
   [& args]
-  (println "Hello, World!"))
+  (let [action-type (a.file-input/action->action-type (first args))
+        file        (a.file-input/file->bytes (last args))]
+    (handler/execute-action action-type file)))
