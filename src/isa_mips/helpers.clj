@@ -1,5 +1,4 @@
-(ns isa-mips.helpers
-  (:require []))
+(ns isa-mips.helpers)
 
 (defn register-class
   [prefix init-idx vector]

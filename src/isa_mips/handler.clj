@@ -1,5 +1,5 @@
 (ns isa-mips.handler
-  (:require [schema.core :as s]))
+  (:require [isa-mips.controllers.data-section :as c.data-section]))
 
 (defmulti execute-action (fn [type _text _data] type))
 
@@ -10,4 +10,5 @@
 
 (defmethod execute-action :run
   [_ text data]
-  (prn "Run action" (nth text 2)))
+  (c.data-section/store-data-section! data)
+  (prn (isa-mips.db.memory/read-value! 268500992)))

@@ -3,13 +3,11 @@
             [isa-mips.models.memory :as m.memory]
             [isa-mips.helpers :as helpers]))
 
-(def text-section-init 4194304)
-
-(def data-section-init 268500992)
+(def text-section-init 0x00400000)
 
 (def ^:private pointers
-  {28 {:name "$gp" :value 4194304}
-   29 {:name "$sp" :value 2147479548}
+  {28 {:name "$gp" :value 0x10008000}
+   29 {:name "$sp" :value 0x7fffeffc}
    30 {:name "$fp" :value 0}
    31 {:name "$ra" :value 0}})
 
