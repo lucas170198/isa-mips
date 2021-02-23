@@ -6,8 +6,8 @@
 
 (defn file->bytes
   "reference: https://clojuredocs.org/clojure.java.io/input-stream"
-  [file-path]
-  (with-open [xin (io/input-stream file-path)
+  [file-path section]
+  (with-open [xin (io/input-stream (str file-path "." section))
               xout (ByteArrayOutputStream.)]
     (io/copy xin xout)
     (.toByteArray xout)))

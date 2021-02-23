@@ -1,12 +1,13 @@
 (ns isa-mips.handler
   (:require [schema.core :as s]))
 
-(defmulti execute-action (fn [type _file] type))
+(defmulti execute-action (fn [type _text _data] type))
 
 (defmethod execute-action :decode
-  [_ file]
-  (prn "Decode action" (nth file 2)))
+  [_ text data]
+  (println "Decode action\nText size: " (count text) "\nData size: " (count data))
+  (prn (nth data 3)))
 
 (defmethod execute-action :run
-  [_ file]
-  (prn "Run action" (nth file 2)))
+  [_ text data]
+  (prn "Run action" (nth text 2)))
