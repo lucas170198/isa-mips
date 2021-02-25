@@ -22,4 +22,4 @@
 
 (abstract-map/extend-schema JInstruction BaseInstruction [:J] {:target-address (bitString 26)})
 
-(def InstructionList [BaseInstruction])
+(def Instructions [BaseInstruction])
