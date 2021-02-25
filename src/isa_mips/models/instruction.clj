@@ -21,5 +21,3 @@
                                                                :immediate (bitString 16)})
 
 (abstract-map/extend-schema JInstruction BaseInstruction [:J] {:target-address (bitString 26)})
-
-(def Instructions [BaseInstruction])
