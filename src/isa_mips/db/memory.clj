@@ -30,6 +30,10 @@
   [address :- s/Int]
   (:value (get @mem address)))
 
+(s/defn read-name! :- s/Str
+  [address :- s/Int]
+  (:name (get @mem address)))
+
 (s/defn write-value! :- m.memory/Store
   [address :- s/Int
    value :- s/Int]

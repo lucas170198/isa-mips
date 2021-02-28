@@ -1,13 +1,16 @@
 (ns isa-mips.handler
   (:require [isa-mips.controllers.data-section :as c.data-section]
-            [isa-mips.adapters.file-input :as a.file-input]))
+            [isa-mips.adapters.file-input :as a.file-input]
+            [isa-mips.logic.instructions :as l.instructions]
+            [isa-mips.controllers.decode :as c.decode]))
 
 (defmulti execute-action (fn [type _text _data] type))
 
 (defmethod execute-action :decode
-  [_ text data]
-  (println "Decode action\nText size: " (count text) "\nData size: " (count data))
-  (prn (a.file-input/byte-array->binary-instruction-array text)))
+  [_ text _]
+  (->> (a.file-input/byte-array->binary-instruction-array text)
+       (map l.instructions/decode-binary-instruction)
+       c.decode/print-instructions!))
 
 (defmethod execute-action :run
   [_ text data]

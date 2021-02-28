@@ -8,7 +8,7 @@
 (s/defschema BaseInstruction
   (abstract-map/abstract-map-schema
    :format
-   {:op (bitString 6)}))
+   {(s/optional-key :op) (bitString 6)}))
 
 (abstract-map/extend-schema RInstruction BaseInstruction [:R] {:rs    (bitString 5)
                                                                :rt    (bitString 5)
@@ -21,3 +21,5 @@
                                                                :immediate (bitString 16)})
 
 (abstract-map/extend-schema JInstruction BaseInstruction [:J] {:target-address (bitString 26)})
+
+(abstract-map/extend-schema Syscall BaseInstruction [:SYSCALL] {})
