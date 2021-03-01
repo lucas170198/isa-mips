@@ -25,6 +25,7 @@
   (cond
     (= (Integer/parseInt binary-string 2) 0x0000000C)
     {:format :SYSCALL}
+
     (= (subs binary-string 0 6) "000000")
     (R-format-instruction binary-string)
 

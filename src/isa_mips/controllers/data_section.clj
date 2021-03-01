@@ -1,5 +1,6 @@
 (ns isa-mips.controllers.data-section
-  (:require [isa-mips.db.memory :as db.memory]))
+  (:require [isa-mips.db.memory :as db.memory]
+            [isa-mips.helpers :as helpers]))
 
 (def data-section-init 0x10010000)
 
@@ -12,4 +13,4 @@
   [byte-file]
   (let [cleaned-byte-array (remove-end-blank-lines byte-file)]
     (dotimes [n (count cleaned-byte-array)]
-      (db.memory/write-value! (+ data-section-init n) (nth cleaned-byte-array n)))))
+      (db.memory/write-value! (+ data-section-init n) (helpers/binary-string (nth cleaned-byte-array n))))))

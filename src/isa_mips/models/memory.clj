@@ -1,13 +1,9 @@
 (ns isa-mips.models.memory
-  (:require [schema.core :as s])
-  (:import [clojure.lang PersistentHashMap]))
+  (:require [schema.core :as s]))
 
-(def hash-map? ^:private
-  (fn ^:static hash-map? [x] (instance? PersistentHashMap x)))
+(def data {:value                 s/Str
+           (s/optional-key :name) s/Str})
 
-(def data {(s/required-key :value) s/Int
-           :name                   s/Str})
+(def store-skeleton {:addr s/Int :meta data})
 
-(def store-skeleton {s/Int data})
-
-(def Store (s/constrained store-skeleton hash-map?))
+(def Store [store-skeleton])
