@@ -14,20 +14,34 @@
         result          (+ (Integer/parseInt reg-bin) immediate-value)]
     (db.memory/write-value! destiny-reg (helpers/binary-string result))))
 
+(defn addiu! []
+  "FIXME")
+
+(defn ori! []
+  "FIXME")
+
+(defn lui! []
+  "FIXME")
+
 ;TODO: Table model schema
 (s/def i-table
-  {"000" {:str "addi" :action addi!}})
+  {"000" {:str "addi" :action addi! :signed true :load-inst false}
+   "001" {:str "addiu" :action addiu! :signed false :load-inst false}
+   "101" {:str "ori" :action ori! :signed true :load-inst false}
+   "111" {:str "lui" :action lui! :signed true :load-inst true}})
 
 (s/defn operation-str! :- s/Str
   [op-code :- s/Str
    destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  (let [func-name        (get-in i-table [(subs op-code 3 6) :str])
+  (let [operation        (get i-table (subs op-code 3 6))
+        func-name        (:str operation )
         destiny-reg-name (db.memory/read-name! (Integer/parseInt destiny-reg 2))
-        reg-name         (db.memory/read-name! (Integer/parseInt reg 2))
-        immediate-dec    (Integer/parseInt immediate 2)]
-    (str func-name " " (string/join ", " [destiny-reg-name reg-name immediate-dec]))))
+        reg-name         (when-not (:load-inst operation) (db.memory/read-name! (Integer/parseInt reg 2)))
+        signed?          (:signed operation)
+        immediate-dec    (if signed? (Integer/parseInt immediate 2) (Integer/parseUnsignedInt immediate 2))]
+    (str func-name " " (string/join ", " (remove nil? [destiny-reg-name reg-name immediate-dec])))))
 
 (s/defn execute!
   [op-code destiny-reg reg immediate]
