@@ -14,14 +14,34 @@
         result          (+ (Integer/parseInt reg-bin) immediate-value)]
     (db.memory/write-value! destiny-reg (helpers/binary-string result))))
 
-(defn addiu! []
-  "FIXME")
+(s/defn addiu!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   immediate :- s/Str]
+  (let [destiny-reg     (Integer/parseInt destiny-reg 2)
+        immediate-value (Integer/parseUnsignedInt immediate 2)
+        reg-bin         (db.memory/read-value! (Integer/parseInt reg 2))
+        result          (+ (Integer/parseInt reg-bin) immediate-value)]
+    (db.memory/write-value! destiny-reg (helpers/binary-string result))))
 
-(defn ori! []
-  "FIXME")
+(s/defn ori!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   immediate :- s/Str]
+  (let [destiny-reg     (Integer/parseInt destiny-reg 2)
+        immediate-value (Integer/parseInt immediate 2)
+        reg-bin         (db.memory/read-value! (Integer/parseInt reg 2))
+        result          (bit-or immediate-value (Integer/parseInt reg-bin 2))]
+    (db.memory/write-value! destiny-reg (helpers/binary-string result 32))))
 
-(defn lui! []
-  "FIXME")
+(s/defn lui!
+  [destiny-reg :- s/Str
+   _reg :- s/Str
+   immediate :- s/Str]
+  (let [destiny-reg     (Integer/parseInt destiny-reg 2)
+        immediate-value (Integer/parseUnsignedInt immediate 2)
+        result          (bit-shift-left immediate-value 16)]
+    (db.memory/write-value! destiny-reg (helpers/binary-string result 32))))
 
 ;TODO: Table model schema
 (s/def i-table
@@ -36,7 +56,7 @@
    reg :- s/Str
    immediate :- s/Str]
   (let [operation        (get i-table (subs op-code 3 6))
-        func-name        (:str operation )
+        func-name        (:str operation)
         destiny-reg-name (db.memory/read-name! (Integer/parseInt destiny-reg 2))
         reg-name         (when-not (:load-inst operation) (db.memory/read-name! (Integer/parseInt reg 2)))
         signed?          (:signed operation)

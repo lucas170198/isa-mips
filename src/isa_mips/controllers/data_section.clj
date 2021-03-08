@@ -11,6 +11,5 @@
 (defn store-data-section!
   "Store the data section bytes, starting by the addr 0x10010000"
   [byte-file]
-  (let [cleaned-byte-array (remove-end-blank-lines byte-file)]
-    (dotimes [n (count cleaned-byte-array)]
-      (db.memory/write-value! (+ data-section-init n) (helpers/binary-string (nth cleaned-byte-array n))))))
+  (dotimes [n (count byte-file)]
+    (db.memory/write-value! (+ data-section-init n) (helpers/binary-string (nth byte-file n)))))
