@@ -53,12 +53,13 @@
   [address :- s/Int]
   (get-in (get-by-addr address) [:meta :name]))
 
-(s/defn write-value! :- m.memory/Store
+(s/defn write-value! :- (s/maybe m.memory/Store)
   [address :- s/Int
    value :- s/Str]
-  (if (nil? (get-by-addr address))
-    (swap! mem conj {:addr address :meta {:value value}})
-    (reset! mem (update-if @mem value [:meta :value] #(= (:addr %) address)))))
+  (when-not (= address 0)
+    (if (nil? (get-by-addr address))
+      (swap! mem conj {:addr address :meta {:value value}})
+      (reset! mem (update-if @mem value [:meta :value] #(= (:addr %) address))))))
 
 (s/defn read-value-by-name! :- s/Str
   [name :- s/Str]
@@ -66,4 +67,16 @@
 
 (s/defn inc-program-counter
   []
-  (swap! pc inc))
+  (swap! pc + 4))
+
+(s/defn dec-program-counter
+  []
+  (swap! pc - 4))
+
+(s/defn sum-program-counter
+  [value :- s/Int]
+  (swap! pc + value))
+
+(s/defn set-program-counter
+  [value :- s/Int]
+  (reset! pc value))

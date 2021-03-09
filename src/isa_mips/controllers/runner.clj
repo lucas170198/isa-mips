@@ -5,7 +5,8 @@
             [isa-mips.db.memory :as db.memory]
             [isa-mips.logic.instructions :as l.instructions]
             [isa-mips.controllers.i-ops :as c.i-ops]
-            [isa-mips.controllers.syscall :as c.syscall]))
+            [isa-mips.controllers.syscall :as c.syscall]
+            [isa-mips.controllers.j-ops :as c.j-ops]))
 
 (defmulti execute-instruction! "Return nil for success execution"
           (fn [instruction] (:format instruction)))
@@ -23,6 +24,12 @@
     reg         :rs
     immediate   :immediate} :- m.instruction/IInstruction]
   (c.i-ops/execute! op-code destiny-reg reg immediate))
+
+(s/defmethod execute-instruction! :J
+  [{op-code :op
+    addr    :target-address} :- m.instruction/JInstruction]
+  (c.j-ops/execute! op-code addr))
+
 
 (s/defmethod execute-instruction! :SYSCALL
   [_]

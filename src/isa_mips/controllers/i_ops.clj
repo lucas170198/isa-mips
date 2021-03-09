@@ -8,18 +8,18 @@
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  (let [destiny-reg     (Integer/parseInt destiny-reg 2)
-        reg-bin         (db.memory/read-value! (Integer/parseInt reg 2))
-        result          (helpers/signed-sum reg-bin immediate)]
+  (let [destiny-reg (Integer/parseInt destiny-reg 2)
+        reg-bin     (db.memory/read-value! (Integer/parseInt reg 2))
+        result      (helpers/signed-sum reg-bin immediate)]
     (db.memory/write-value! destiny-reg (helpers/binary-string result))))
 
 (s/defn addiu!
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  (let [destiny-reg     (Integer/parseInt destiny-reg 2)
-        reg-bin         (db.memory/read-value! (Integer/parseInt reg 2))
-        result          (helpers/unsigned-sum reg-bin immediate)]
+  (let [destiny-reg (Integer/parseInt destiny-reg 2)
+        reg-bin     (db.memory/read-value! (Integer/parseInt reg 2))
+        result      (helpers/unsigned-sum reg-bin immediate)]
     (db.memory/write-value! destiny-reg (helpers/binary-string result))))
 
 (s/defn ori!
@@ -45,13 +45,19 @@
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  "FIX ME")
+  (let [rt-bin          (db.memory/read-value! (Integer/parseInt destiny-reg 2))
+        rs-bin          (db.memory/read-value! (Integer/parseInt reg 2))
+        immediate-value (Integer/parseInt immediate 2)]
+    (when (= rt-bin rs-bin) (db.memory/sum-program-counter (* immediate-value 4)))))
 
 (s/defn bne!
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  "FIX ME")
+  (let [rt-bin          (db.memory/read-value! (Integer/parseInt destiny-reg 2))
+        rs-bin          (db.memory/read-value! (Integer/parseInt reg 2))
+        immediate-value (Integer/parseInt immediate 2)]
+    (when-not (= rt-bin rs-bin) (db.memory/sum-program-counter (* immediate-value 4)))))
 
 ;TODO: Table model schema
 (s/def i-table

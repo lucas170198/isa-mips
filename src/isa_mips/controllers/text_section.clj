@@ -7,4 +7,4 @@
   [byte-file]
   "Store the program starting by the the addr 0x00400000"
   (dotimes [n (count byte-file)]
-    (db.memory/write-value! (+ text-section-init n) (nth byte-file n))))
+    (db.memory/write-value! (+ text-section-init (* n 4)) (nth byte-file n))))
