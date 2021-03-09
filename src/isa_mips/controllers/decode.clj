@@ -2,7 +2,8 @@
   (:require [schema.core :as s]
             [isa-mips.models.instruction :as m.instruction]
             [isa-mips.controllers.r-ops :as c.r-ops]
-            [isa-mips.controllers.i-ops :as c.i-ops]))
+            [isa-mips.controllers.i-ops :as c.i-ops]
+            [isa-mips.controllers.j-ops :as c.j-ops]))
 
 (defmulti instruction-string! (fn [instruction] (:format instruction)))
 
@@ -23,6 +24,11 @@
     reg :rs
     immediate :immediate} :- m.instruction/IInstruction]
   (c.i-ops/operation-str! op-code destiny-reg reg immediate))
+
+(s/defmethod instruction-string! :J
+  [{op-code :op
+    addr :target-address} :- m.instruction/JInstruction]
+  (c.j-ops/operation-str! op-code addr))
 
 (s/defn print-instructions!
   [instructions :- [m.instruction/BaseInstruction]]

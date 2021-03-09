@@ -14,11 +14,17 @@
 
 (s/defn ^:private I-format-instruction
   [binary-string]
-  {:format :I
-   :op     (subs binary-string 0 6)
-   :rs     (subs binary-string 6 11)
-   :rt     (subs binary-string 11 16)
+  {:format    :I
+   :op        (subs binary-string 0 6)
+   :rs        (subs binary-string 6 11)
+   :rt        (subs binary-string 11 16)
    :immediate (subs binary-string 16 32)})
+
+(s/defn ^:private J-format-instruction
+  [binary-string]
+  {:format         :J
+   :op             (subs binary-string 0 6)
+   :target-address (subs binary-string 6 32)})
 
 (s/defn decode-binary-instruction :- m.instruction/BaseInstruction
   [binary-string]
@@ -30,4 +36,10 @@
     (R-format-instruction binary-string)
 
     (= (subs binary-string 0 3) "001")
-    (I-format-instruction binary-string)))
+    (I-format-instruction binary-string)
+
+    (= (subs binary-string 0 5) "00010")
+    (I-format-instruction binary-string)
+
+    (= (subs binary-string 0 5) "00001")
+    (J-format-instruction binary-string)))

@@ -41,19 +41,33 @@
         result          (bit-shift-left immediate-value 16)]
     (db.memory/write-value! destiny-reg (helpers/binary-string result 32))))
 
+(s/defn beq!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   immediate :- s/Str]
+  "FIX ME")
+
+(s/defn bne!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   immediate :- s/Str]
+  "FIX ME")
+
 ;TODO: Table model schema
 (s/def i-table
-  {"000" {:str "addi" :action addi! :signed true :load-inst false}
-   "001" {:str "addiu" :action addiu! :signed false :load-inst false}
-   "101" {:str "ori" :action ori! :signed true :load-inst false}
-   "111" {:str "lui" :action lui! :signed true :load-inst true}})
+  {"001000" {:str "addi" :action addi! :signed true :load-inst false}
+   "001001" {:str "addiu" :action addiu! :signed false :load-inst false}
+   "001101" {:str "ori" :action ori! :signed true :load-inst false}
+   "001111" {:str "lui" :action lui! :signed true :load-inst true}
+   "000100" {:str "beq" :action beq! :signed true :load-inst false}
+   "000101" {:str "bne" :action bne! :signed true :load-inst false}})
 
 (s/defn operation-str! :- s/Str
   [op-code :- s/Str
    destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  (let [operation        (get i-table (subs op-code 3 6))
+  (let [operation        (get i-table (subs op-code 0 6))
         func-name        (:str operation)
         destiny-reg-name (db.memory/read-name! (Integer/parseInt destiny-reg 2))
         reg-name         (when-not (:load-inst operation) (db.memory/read-name! (Integer/parseInt reg 2)))
@@ -63,5 +77,5 @@
 
 (s/defn execute!
   [op-code destiny-reg reg immediate]
-  (let [func-fn (get-in i-table [(subs op-code 3 6) :action])]
+  (let [func-fn (get-in i-table [(subs op-code 0 6) :action])]
     (func-fn destiny-reg reg immediate)))
