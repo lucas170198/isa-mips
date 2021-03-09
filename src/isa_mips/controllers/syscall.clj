@@ -9,7 +9,7 @@
   []
   (-> (db.memory/read-value-by-name! "$a0")
       (Integer/parseInt 2)
-      print))
+      println))
 
 (s/defn ^:private printable-array! []
   (loop [addr  (Integer/parseInt (db.memory/read-value-by-name! "$a0") 2)

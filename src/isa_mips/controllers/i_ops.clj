@@ -9,9 +9,8 @@
    reg :- s/Str
    immediate :- s/Str]
   (let [destiny-reg     (Integer/parseInt destiny-reg 2)
-        immediate-value (Integer/parseInt immediate 2)
         reg-bin         (db.memory/read-value! (Integer/parseInt reg 2))
-        result          (+ (Integer/parseInt reg-bin) immediate-value)]
+        result          (helpers/signed-sum reg-bin immediate)]
     (db.memory/write-value! destiny-reg (helpers/binary-string result))))
 
 (s/defn addiu!
@@ -19,9 +18,8 @@
    reg :- s/Str
    immediate :- s/Str]
   (let [destiny-reg     (Integer/parseInt destiny-reg 2)
-        immediate-value (Integer/parseUnsignedInt immediate 2)
         reg-bin         (db.memory/read-value! (Integer/parseInt reg 2))
-        result          (+ (Integer/parseInt reg-bin) immediate-value)]
+        result          (helpers/unsigned-sum reg-bin immediate)]
     (db.memory/write-value! destiny-reg (helpers/binary-string result))))
 
 (s/defn ori!
