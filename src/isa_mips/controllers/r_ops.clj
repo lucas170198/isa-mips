@@ -6,22 +6,31 @@
 
 (s/defn add!
   [rd :- s/Str rs :- s/Str rt :- s/Str]
-  (let [rd-addr (Integer/parseInt rd 2)
+  (let [rd-addr  (Integer/parseInt rd 2)
         rs-value (db.memory/read-value! (Integer/parseInt rs 2))
         rt-value (db.memory/read-value! (Integer/parseInt rt 2))
-        result (+ (Integer/parseInt rs-value 2) (Integer/parseInt rt-value 2))]
+        result   (helpers/signed-sum rs-value rt-value)]
+    (db.memory/write-value! rd-addr (helpers/binary-string result))))
+
+(s/defn addu!
+  [rd :- s/Str rs :- s/Str rt :- s/Str]
+  (let [rd-addr  (Integer/parseInt rd 2)
+        rs-value (db.memory/read-value! (Integer/parseInt rs 2))
+        rt-value (db.memory/read-value! (Integer/parseInt rt 2))
+        result   (helpers/unsigned-sum rs-value rt-value)]
     (db.memory/write-value! rd-addr (helpers/binary-string result))))
 
 ;TODO: Table model schema
 (s/def r-table
-  {"100000" {:str "add" :action add!}})
+  {"100000" {:str "add" :action add! :signed true}
+   "100001" {:str "addu" :action addu! :signed false}})
 
 (s/defn operation-str! :- s/Str
   [func :- s/Str
    destiny-reg :- s/Str
    first-reg :- s/Str
    second-reg :- s/Str]
-  (let [func-name     (get-in r-table [func :str])
+  (let [func-name        (get-in r-table [func :str])
         destiny-reg-name (db.memory/read-name! (Integer/parseInt destiny-reg 2))
         first-reg-name   (db.memory/read-name! (Integer/parseInt first-reg 2))
         second-name      (db.memory/read-name! (Integer/parseInt second-reg 2))]
