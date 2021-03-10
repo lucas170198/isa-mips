@@ -6,10 +6,15 @@
   [addr :- s/Str]
   (let [complete-addr (str addr "00")]
     (db.memory/set-program-counter (Integer/parseInt complete-addr 2))
-    (db.memory/dec-program-counter))) ;TODO: Rataria, o PG é sempre incrementado no while
+    (db.memory/dec-program-counter))) ;TODO: Rataria, o PC é sempre incrementado no while
+
+(s/defn ^:private jump-and-link!
+  [addr :- s/Str]
+  "FIX ME")
 
 (s/def j-table
-  {"000010" {:str "j" :action jump!}})
+  {"000010" {:str "j" :action jump!}
+   "000011" {:str "jal" :action jump-and-link!}})
 
 (s/defn operation-str! :- s/Str
   [func :- s/Str
