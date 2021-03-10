@@ -15,8 +15,9 @@
   [{func :funct
     destiny-reg :rd
     first-reg :rs
-    second-reg :rt} :- m.instruction/RInstruction]
-  (c.r-ops/operation-str! func destiny-reg first-reg second-reg))
+    second-reg :rt
+    shamt :shamt} :- m.instruction/RInstruction]
+  (c.r-ops/operation-str! func destiny-reg first-reg second-reg shamt))
 
 (s/defmethod instruction-string! :I
   [{op-code :op

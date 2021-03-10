@@ -30,29 +30,41 @@
 
 (s/defn ^:private jump-register!
   [_rd :- s/Str _rs :- s/Str _rt :- s/Str]
-  (let [ra (db.memory/read-value-by-name! "$ra")
-        target-address (- (Integer/parseInt ra 2) 4)] ;TODO: Rataria, PC
+  (let [ra             (db.memory/read-value-by-name! "$ra")
+        target-address (- (Integer/parseInt ra 2) 4)]       ;TODO: Rataria, PC
     (db.memory/set-program-counter target-address)))
+
+(s/defn ^:private shift-left!
+  [_rd :- s/Str _rs :- s/Str _rt :- s/Str])
+
+(s/defn ^:private shift-right!
+  [_rd :- s/Str _rs :- s/Str _rt :- s/Str])
 
 ;TODO: Table model schema
 (s/def r-table
-  {"100000" {:str "add" :action add! :signed true}
-   "100001" {:str "addu" :action addu! :signed false}
-   "101010" {:str "slt" :action set-less-than! :signed true}
-   "001000" {:str "jr" :action jump-register! :signed true :jump-instruction true}})
+  {"100000" {:str "add" :action add!}
+   "100001" {:str "addu" :action addu! :unsigned true}
+   "101010" {:str "slt" :action set-less-than!}
+   "001000" {:str "jr" :action jump-register! :jump-instruction true}
+   "000000" {:str "sll" :action shift-left! :shamt true}
+   "000010" {:str "srl" :action shift-right! :shamt true}})
 
 (s/defn operation-str! :- s/Str
   [func :- s/Str
    destiny-reg :- s/Str
    first-reg :- s/Str
-   second-reg :- s/Str]
+   second-reg :- s/Str
+   shamt :- s/Str]
   (let [operation         (get r-table func)
         func-name         (:str operation)
         jump-instruction? (:jump-instruction operation)
+        shamt?            (:shamt operation)
         destiny-reg-name  (when-not jump-instruction? (db.memory/read-name! (Integer/parseInt destiny-reg 2)))
-        first-reg-name    (db.memory/read-name! (Integer/parseInt first-reg 2))
-        second-name       (when-not jump-instruction? (db.memory/read-name! (Integer/parseInt second-reg 2)))]
-    (str func-name " " (string/join ", " (remove nil? [destiny-reg-name first-reg-name second-name])))))
+        first-reg-name    (when-not shamt? (db.memory/read-name! (Integer/parseInt first-reg 2)))
+        shamt             (when shamt? (str (Integer/parseInt shamt 2)))
+        second-name       (when-not jump-instruction?
+                            (db.memory/read-name! (Integer/parseInt second-reg 2)))]
+    (str func-name " " (string/join ", " (remove nil? [destiny-reg-name first-reg-name second-name shamt])))))
 
 (s/defn execute!
   [func :- s/Str
