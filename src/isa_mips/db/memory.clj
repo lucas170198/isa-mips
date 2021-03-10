@@ -69,10 +69,6 @@
   []
   (swap! pc + 4))
 
-(s/defn dec-program-counter
-  []
-  (swap! pc - 4))
-
 (s/defn sum-program-counter
   [value :- s/Int]
   (swap! pc + value))

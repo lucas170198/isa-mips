@@ -3,13 +3,15 @@
             [isa-mips.db.memory :as db.memory]
             [isa-mips.helpers :as helpers]))
 
-(def exit "code for exit application" -1)
+(defn exit! []
+  (println)
+  (System/exit 0))
 
 (defn print-int!
   []
   (-> (db.memory/read-value-by-name! "$a0")
       (Integer/parseInt 2)
-      println))
+      print))
 
 (s/defn ^:private printable-array! []
   (loop [addr  (Integer/parseInt (db.memory/read-value-by-name! "$a0") 2)
@@ -46,4 +48,4 @@
       4 (print-string!)
       5 (read-integer!)
       11 (print-char!)
-      10 exit)))
+      10 (exit!))))

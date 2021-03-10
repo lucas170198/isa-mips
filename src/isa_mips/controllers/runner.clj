@@ -42,5 +42,6 @@
       (execute-instruction!)))
 
 (s/defn run-program! []
-  (while (not= (run-current-instruction!) -1)               ;Stops in the exit syscall
+  (while true ;Stops in the exit syscall
+    (run-current-instruction!)
     (db.memory/inc-program-counter)))

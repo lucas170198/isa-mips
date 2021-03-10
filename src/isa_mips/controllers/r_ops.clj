@@ -6,27 +6,33 @@
 
 (s/defn ^:private add!
   [rd :- s/Str rs :- s/Str rt :- s/Str]
-  (let [rd-addr  (Integer/parseInt rd 2)
-        rs-value (db.memory/read-value! (Integer/parseInt rs 2))
-        rt-value (db.memory/read-value! (Integer/parseInt rt 2))
-        result   (helpers/signed-sum rs-value rt-value)]
+  (let [rd-addr (Integer/parseInt rd 2)
+        rs-bin  (db.memory/read-value! (Integer/parseInt rs 2))
+        rt-bin  (db.memory/read-value! (Integer/parseInt rt 2))
+        result  (helpers/signed-sum rs-bin rt-bin)]
     (db.memory/write-value! rd-addr (helpers/binary-string result))))
 
 (s/defn ^:private addu!
   [rd :- s/Str rs :- s/Str rt :- s/Str]
-  (let [rd-addr  (Integer/parseInt rd 2)
-        rs-value (db.memory/read-value! (Integer/parseInt rs 2))
-        rt-value (db.memory/read-value! (Integer/parseInt rt 2))
-        result   (helpers/unsigned-sum rs-value rt-value)]
+  (let [rd-addr (Integer/parseInt rd 2)
+        rs-bin  (db.memory/read-value! (Integer/parseInt rs 2))
+        rt-bin  (db.memory/read-value! (Integer/parseInt rt 2))
+        result  (helpers/unsigned-sum rs-bin rt-bin)]
     (db.memory/write-value! rd-addr (helpers/binary-string result))))
 
 (s/defn ^:private set-less-than!
   [rd :- s/Str rs :- s/Str rt :- s/Str]
-  "FIX ME!")
+  (let [rd-addr  (Integer/parseInt rd 2)
+        rs-value (-> (Integer/parseInt rs 2) (db.memory/read-value!) (Integer/parseInt 2))
+        rt-value (-> (Integer/parseInt rt 2) (db.memory/read-value!) (Integer/parseInt 2))
+        result   (if (< rs-value rt-value) 1 0)]
+    (db.memory/write-value! rd-addr (helpers/binary-string result))))
 
 (s/defn ^:private jump-register!
-  [rd :- s/Str rs :- s/Str rt :- s/Str]
-  "FIX ME!")
+  [_rd :- s/Str _rs :- s/Str _rt :- s/Str]
+  (let [ra (db.memory/read-value-by-name! "$ra")
+        target-address (- (Integer/parseInt ra 2) 4)] ;TODO: Rataria, PC
+    (db.memory/set-program-counter target-address)))
 
 ;TODO: Table model schema
 (s/def r-table
