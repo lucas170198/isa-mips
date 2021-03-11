@@ -13,7 +13,7 @@
 
 (defn signed-sum
   [reg1 reg2]
-  (+ (bin->complement-of-two-int reg1) (bin->complement-of-two-int reg2)))
+  (+ (Integer/parseInt reg1 2) (Integer/parseInt reg2 2)))
 
 (defn bin->hex-str
   [bin-str]

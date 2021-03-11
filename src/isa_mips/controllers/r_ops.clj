@@ -12,7 +12,7 @@
         rs-bin  (db.memory/read-value! (Integer/parseInt rs 2))
         rt-bin  (db.memory/read-value! (Integer/parseInt rt 2))
         result  (l.binary/signed-sum rs-bin rt-bin)]
-    (db.memory/write-value! rd-addr (helpers/binary-string result))))
+    (db.memory/write-value! rd-addr (helpers/binary-string result 32))))
 
 (s/defn ^:private addu!
   [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
@@ -20,7 +20,7 @@
         rs-bin  (db.memory/read-value! (Integer/parseInt rs 2))
         rt-bin  (db.memory/read-value! (Integer/parseInt rt 2))
         result  (l.binary/unsigned-sum rs-bin rt-bin)]
-    (db.memory/write-value! rd-addr (helpers/binary-string result))))
+    (db.memory/write-value! rd-addr (helpers/binary-string result 32))))
 
 (s/defn ^:private set-less-than!
   [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
@@ -28,7 +28,7 @@
         rs-value (c.text-section/integer-reg-value! rs)
         rt-value (c.text-section/integer-reg-value! rt)
         result   (if (< rs-value rt-value) 1 0)]
-    (db.memory/write-value! rd-addr (helpers/binary-string result))))
+    (db.memory/write-value! rd-addr (helpers/binary-string result 32))))
 
 (s/defn ^:private jump-register!
   [_rd :- s/Str _rs :- s/Str _rt :- s/Str _shamt :- s/Str]

@@ -3,7 +3,9 @@
             [clojure.string :as string]
             [isa-mips.db.memory :as db.memory]
             [isa-mips.helpers :as helpers]
-            [isa-mips.logic.binary :as l.binary]))
+            [isa-mips.logic.binary :as l.binary]
+            [isa-mips.controllers.text-section :as c.text-section]
+            [isa-mips.controllers.data-section :as c.data-section]))
 
 (s/defn ^:private addi!
   [destiny-reg :- s/Str
@@ -76,13 +78,30 @@
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  "FIX ME")
+  (let [destiny-addr (Integer/parseInt destiny-reg 2)
+        offset       (l.binary/bin->complement-of-two-int immediate)
+        reg-value    (c.text-section/integer-reg-value! reg)
+        data-section c.data-section/data-section-init
+        target-addr  (+ reg-value offset)]
+    ;(println "XXXXXXXXXXXXXX")
+    ;(println "LW: target - " target-addr "=" reg-value "+" offset)
+    (when-let [memory-value (when (>= target-addr data-section)
+                              (db.memory/read-value! target-addr))]
+      ;(println "LW: value - " memory-value)
+      (db.memory/write-value! destiny-addr memory-value))))
 
 (s/defn ^:private store-word!
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  "FIX ME")
+  (let [destiny-value (db.memory/read-value! (Integer/parseInt destiny-reg 2))
+        offset        (l.binary/bin->complement-of-two-int immediate)
+        reg-value     (c.text-section/integer-reg-value! reg)
+        data-section  c.data-section/data-section-init
+        target-addr   (+ reg-value offset)]
+    (when (>= target-addr data-section)
+      #_(println "SW: " target-addr "/" destiny-value)
+      (db.memory/write-value! target-addr destiny-value))))
 
 (s/def i-table
   {"001000" {:str "addi" :action addi!}

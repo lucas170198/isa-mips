@@ -6,7 +6,8 @@
             [isa-mips.logic.instructions :as l.instructions]
             [isa-mips.controllers.i-ops :as c.i-ops]
             [isa-mips.controllers.syscall :as c.syscall]
-            [isa-mips.controllers.j-ops :as c.j-ops]))
+            [isa-mips.controllers.j-ops :as c.j-ops]
+            [isa-mips.logic.binary :as l.binary]))
 
 (defmulti execute-instruction! "Return nil for success execution"
           (fn [instruction] (:format instruction)))
@@ -37,7 +38,10 @@
   (c.syscall/execute!))
 
 (defn run-current-instruction! []
-  #_(println (str (Integer/toHexString @db.memory/pc) " --------------"))
+  ;(println "------------------------- Program counter" (Integer/toHexString @db.memory/pc))
+  ;(println "MAP\n")
+  ;(clojure.pprint/pprint (map #(update-in % [:meta :value] l.binary/bin->hex-str)
+  ;                            (filter #(<= (:addr %) 26) @db.memory/mem)))
   (-> @db.memory/pc
       (db.memory/read-value!)
       (l.instructions/decode-binary-instruction)
