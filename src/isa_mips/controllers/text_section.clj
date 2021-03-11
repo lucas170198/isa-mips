@@ -8,3 +8,9 @@
   "Store the program starting by the the addr 0x00400000"
   (dotimes [n (count byte-file)]
     (db.memory/write-value! (+ text-section-init (* n 4)) (nth byte-file n))))
+
+(defn integer-reg-value!
+  [reg]
+  (-> (Integer/parseInt reg 2)
+      (db.memory/read-value!)
+      (Integer/parseInt 2)))

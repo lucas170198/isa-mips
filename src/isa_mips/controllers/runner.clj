@@ -15,8 +15,9 @@
   [{func        :funct
     destiny-reg :rd
     first-reg   :rs
-    second-reg  :rt} :- m.instruction/RInstruction]
-  (c.r-ops/execute! func destiny-reg first-reg second-reg))
+    second-reg  :rt
+    shamt       :shamt} :- m.instruction/RInstruction]
+  (c.r-ops/execute! func destiny-reg first-reg second-reg shamt))
 
 (s/defmethod execute-instruction! :I
   [{op-code     :op
@@ -36,12 +37,13 @@
   (c.syscall/execute!))
 
 (defn run-current-instruction! []
+  #_(println (str (Integer/toHexString @db.memory/pc) " --------------"))
   (-> @db.memory/pc
       (db.memory/read-value!)
       (l.instructions/decode-binary-instruction)
       (execute-instruction!)))
 
 (s/defn run-program! []
-  (while true ;Stops in the exit syscall
+  (while true                                               ;Stops in the exit syscall
     (run-current-instruction!)
     (db.memory/inc-program-counter)))

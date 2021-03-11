@@ -2,7 +2,8 @@
   (:require [schema.core :as s]
             [clojure.string :as string]
             [isa-mips.db.memory :as db.memory]
-            [isa-mips.helpers :as helpers]))
+            [isa-mips.helpers :as helpers]
+            [isa-mips.logic.binary :as l.binary]))
 
 (s/defn ^:private addi!
   [destiny-reg :- s/Str
@@ -10,7 +11,7 @@
    immediate :- s/Str]
   (let [destiny-reg (Integer/parseInt destiny-reg 2)
         reg-bin     (db.memory/read-value! (Integer/parseInt reg 2))
-        result      (helpers/signed-sum reg-bin immediate)]
+        result      (l.binary/signed-sum reg-bin immediate)]
     (db.memory/write-value! destiny-reg (helpers/binary-string result))))
 
 (s/defn ^:private addiu!
@@ -19,7 +20,7 @@
    immediate :- s/Str]
   (let [destiny-reg (Integer/parseInt destiny-reg 2)
         reg-bin     (db.memory/read-value! (Integer/parseInt reg 2))
-        result      (helpers/unsigned-sum reg-bin immediate)]
+        result      (l.binary/unsigned-sum reg-bin immediate)]
     (db.memory/write-value! destiny-reg (helpers/binary-string result))))
 
 (s/defn ^:private ori!
@@ -30,6 +31,16 @@
         immediate-value (Integer/parseInt immediate 2)
         reg-bin         (db.memory/read-value! (Integer/parseInt reg 2))
         result          (bit-or immediate-value (Integer/parseInt reg-bin 2))]
+    (db.memory/write-value! destiny-reg (helpers/binary-string result 32))))
+
+(s/defn ^:private andi
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   immediate :- s/Str]
+  (let [destiny-reg     (Integer/parseInt destiny-reg 2)
+        immediate-value (Integer/parseInt immediate 2)
+        reg-bin         (db.memory/read-value! (Integer/parseInt reg 2))
+        result          (bit-and immediate-value (Integer/parseInt reg-bin 2))]
     (db.memory/write-value! destiny-reg (helpers/binary-string result 32))))
 
 (s/defn ^:private lui!
@@ -48,7 +59,8 @@
   (let [rt-bin          (db.memory/read-value! (Integer/parseInt destiny-reg 2))
         rs-bin          (db.memory/read-value! (Integer/parseInt reg 2))
         immediate-value (Integer/parseInt immediate 2)]
-    (when (= rt-bin rs-bin) (db.memory/sum-program-counter (* immediate-value 4)))))
+    (when (= (Integer/parseInt rt-bin 2) (Integer/parseInt rs-bin 2))
+      (db.memory/sum-program-counter (* immediate-value 4)))))
 
 (s/defn ^:private branch-not-equal!
   [destiny-reg :- s/Str
@@ -57,13 +69,14 @@
   (let [rt-bin          (db.memory/read-value! (Integer/parseInt destiny-reg 2))
         rs-bin          (db.memory/read-value! (Integer/parseInt reg 2))
         immediate-value (Integer/parseInt immediate 2)]
-    (when-not (= rt-bin rs-bin) (db.memory/sum-program-counter (* immediate-value 4)))))
+    (when-not (= (Integer/parseInt rt-bin 2) (Integer/parseInt rs-bin 2))
+      (db.memory/sum-program-counter (* immediate-value 4)))))
 
-;TODO: Table model schema
 (s/def i-table
   {"001000" {:str "addi" :action addi!}
    "001001" {:str "addiu" :action addiu! :unsigned true}
    "001101" {:str "ori" :action ori!}
+   "001100" {:str "andi" :action andi}
    "001111" {:str "lui" :action lui! :load-inst true}
    "000100" {:str "beq" :action branch-equal!}
    "000101" {:str "bne" :action branch-not-equal!}})

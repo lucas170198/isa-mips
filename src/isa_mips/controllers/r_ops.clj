@@ -2,43 +2,55 @@
   (:require [schema.core :as s]
             [clojure.string :as string]
             [isa-mips.db.memory :as db.memory]
-            [isa-mips.helpers :as helpers]))
+            [isa-mips.logic.binary :as l.binary]
+            [isa-mips.helpers :as helpers]
+            [isa-mips.controllers.text-section :as c.text-section]))
 
 (s/defn ^:private add!
-  [rd :- s/Str rs :- s/Str rt :- s/Str]
+  [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
   (let [rd-addr (Integer/parseInt rd 2)
         rs-bin  (db.memory/read-value! (Integer/parseInt rs 2))
         rt-bin  (db.memory/read-value! (Integer/parseInt rt 2))
-        result  (helpers/signed-sum rs-bin rt-bin)]
+        result  (l.binary/signed-sum rs-bin rt-bin)]
     (db.memory/write-value! rd-addr (helpers/binary-string result))))
 
 (s/defn ^:private addu!
-  [rd :- s/Str rs :- s/Str rt :- s/Str]
+  [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
   (let [rd-addr (Integer/parseInt rd 2)
         rs-bin  (db.memory/read-value! (Integer/parseInt rs 2))
         rt-bin  (db.memory/read-value! (Integer/parseInt rt 2))
-        result  (helpers/unsigned-sum rs-bin rt-bin)]
+        result  (l.binary/unsigned-sum rs-bin rt-bin)]
     (db.memory/write-value! rd-addr (helpers/binary-string result))))
 
 (s/defn ^:private set-less-than!
-  [rd :- s/Str rs :- s/Str rt :- s/Str]
+  [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
   (let [rd-addr  (Integer/parseInt rd 2)
-        rs-value (-> (Integer/parseInt rs 2) (db.memory/read-value!) (Integer/parseInt 2))
-        rt-value (-> (Integer/parseInt rt 2) (db.memory/read-value!) (Integer/parseInt 2))
+        rs-value (c.text-section/integer-reg-value! rs)
+        rt-value (c.text-section/integer-reg-value! rt)
         result   (if (< rs-value rt-value) 1 0)]
     (db.memory/write-value! rd-addr (helpers/binary-string result))))
 
 (s/defn ^:private jump-register!
-  [_rd :- s/Str _rs :- s/Str _rt :- s/Str]
+  [_rd :- s/Str _rs :- s/Str _rt :- s/Str _shamt :- s/Str]
   (let [ra             (db.memory/read-value-by-name! "$ra")
         target-address (- (Integer/parseInt ra 2) 4)]       ;TODO: Rataria, PC
     (db.memory/set-program-counter target-address)))
 
 (s/defn ^:private shift-left!
-  [_rd :- s/Str _rs :- s/Str _rt :- s/Str])
+  [rd :- s/Str _rs :- s/Str rt :- s/Str shamt :- s/Str]
+  (let [rd-addr     (Integer/parseInt rd 2)
+        rt-value    (-> (Integer/parseInt rt 2) (db.memory/read-value!) (Integer/parseInt 2))
+        shamt-value (Integer/parseInt shamt 2)
+        result      (bit-shift-left rt-value shamt-value)]
+    (db.memory/write-value! rd-addr (helpers/binary-string result 32))))
 
 (s/defn ^:private shift-right!
-  [_rd :- s/Str _rs :- s/Str _rt :- s/Str])
+  [rd :- s/Str _rs :- s/Str rt :- s/Str shamt :- s/Str]
+  (let [rd-addr     (Integer/parseInt rd 2)
+        rt-value    (c.text-section/integer-reg-value! rt)
+        shamt-value (Integer/parseInt shamt 2)
+        result      (bit-shift-right rt-value shamt-value)]
+    (db.memory/write-value! rd-addr (helpers/binary-string result 32))))
 
 ;TODO: Table model schema
 (s/def r-table
@@ -70,8 +82,9 @@
   [func :- s/Str
    destiny-reg :- s/Str
    first-reg :- s/Str
-   second-reg :- s/Str]
+   second-reg :- s/Str
+   shamt :- s/Str]
   (let [func-fn (get-in r-table [func :action])]
-    (func-fn destiny-reg first-reg second-reg)))
+    (func-fn destiny-reg first-reg second-reg shamt)))
 
 
