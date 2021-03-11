@@ -73,7 +73,7 @@
         shamt?            (:shamt operation)
         destiny-reg-name  (when-not jump-instruction? (db.memory/read-name! (Integer/parseInt destiny-reg 2)))
         first-reg-name    (when-not shamt? (db.memory/read-name! (Integer/parseInt first-reg 2)))
-        shamt             (when shamt? (str (Integer/parseInt shamt 2)))
+        shamt             (when shamt? (Integer/parseInt shamt 2))
         second-name       (when-not jump-instruction?
                             (db.memory/read-name! (Integer/parseInt second-reg 2)))]
     (str func-name " " (string/join ", " (remove nil? [destiny-reg-name first-reg-name second-name shamt])))))

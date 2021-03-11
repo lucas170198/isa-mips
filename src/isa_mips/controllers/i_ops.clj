@@ -58,7 +58,7 @@
    immediate :- s/Str]
   (let [rt-bin          (db.memory/read-value! (Integer/parseInt destiny-reg 2))
         rs-bin          (db.memory/read-value! (Integer/parseInt reg 2))
-        immediate-value (Integer/parseInt immediate 2)]
+        immediate-value (l.binary/bin->complement-of-two-int immediate)]
     (when (= (Integer/parseInt rt-bin 2) (Integer/parseInt rs-bin 2))
       (db.memory/sum-program-counter (* immediate-value 4)))))
 
@@ -68,7 +68,7 @@
    immediate :- s/Str]
   (let [rt-bin          (db.memory/read-value! (Integer/parseInt destiny-reg 2))
         rs-bin          (db.memory/read-value! (Integer/parseInt reg 2))
-        immediate-value (Integer/parseInt immediate 2)]
+        immediate-value (l.binary/bin->complement-of-two-int immediate)]
     (when-not (= (Integer/parseInt rt-bin 2) (Integer/parseInt rs-bin 2))
       (db.memory/sum-program-counter (* immediate-value 4)))))
 
@@ -91,7 +91,7 @@
         destiny-reg-name (db.memory/read-name! (Integer/parseInt destiny-reg 2))
         reg-name         (when-not (:load-inst operation) (db.memory/read-name! (Integer/parseInt reg 2)))
         unsigned?        (:unsigned operation)
-        immediate-dec    (if unsigned? (Integer/parseUnsignedInt immediate 2) (Integer/parseInt immediate 2))]
+        immediate-dec    (if unsigned? (Integer/parseUnsignedInt immediate 2) (l.binary/bin->complement-of-two-int immediate))]
     (str func-name " " (string/join ", " (remove nil? [destiny-reg-name reg-name immediate-dec])))))
 
 (s/defn execute!
