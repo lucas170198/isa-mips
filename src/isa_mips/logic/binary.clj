@@ -14,3 +14,9 @@
 (defn signed-sum
   [reg1 reg2]
   (+ (bin->complement-of-two-int reg1) (bin->complement-of-two-int reg2)))
+
+(defn bin->hex-str
+  [bin-str]
+  (->> (Integer/parseInt bin-str 2)
+       Integer/toHexString
+       (str " 0x")))

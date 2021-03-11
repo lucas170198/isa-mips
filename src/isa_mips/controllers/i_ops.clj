@@ -72,6 +72,18 @@
     (when-not (= (Integer/parseInt rt-bin 2) (Integer/parseInt rs-bin 2))
       (db.memory/sum-program-counter (* immediate-value 4)))))
 
+(s/defn ^:private load-word!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   immediate :- s/Str]
+  "FIX ME")
+
+(s/defn ^:private store-word!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   immediate :- s/Str]
+  "FIX ME")
+
 (s/def i-table
   {"001000" {:str "addi" :action addi!}
    "001001" {:str "addiu" :action addiu! :unsigned true}
@@ -79,7 +91,9 @@
    "001100" {:str "andi" :action andi}
    "001111" {:str "lui" :action lui! :load-inst true}
    "000100" {:str "beq" :action branch-equal!}
-   "000101" {:str "bne" :action branch-not-equal!}})
+   "000101" {:str "bne" :action branch-not-equal!}
+   "100011" {:str "lw" :action load-word! :memory-op true}
+   "101011" {:str "sw" :action store-word! :memory-op true}})
 
 (s/defn operation-str! :- s/Str
   [op-code :- s/Str
@@ -91,8 +105,11 @@
         destiny-reg-name (db.memory/read-name! (Integer/parseInt destiny-reg 2))
         reg-name         (when-not (:load-inst operation) (db.memory/read-name! (Integer/parseInt reg 2)))
         unsigned?        (:unsigned operation)
+        memory-op?       (:memory-op operation)
         immediate-dec    (if unsigned? (Integer/parseUnsignedInt immediate 2) (l.binary/bin->complement-of-two-int immediate))]
-    (str func-name " " (string/join ", " (remove nil? [destiny-reg-name reg-name immediate-dec])))))
+    (if memory-op?
+      (str func-name " " destiny-reg ", " (l.binary/bin->hex-str immediate) "(" reg-name ")")
+      (str func-name " " (string/join ", " (remove nil? [destiny-reg-name reg-name immediate-dec]))))))
 
 (s/defn execute!
   [op-code destiny-reg reg immediate]

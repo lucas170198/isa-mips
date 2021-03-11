@@ -29,13 +29,19 @@
 (s/defn decode-binary-instruction :- m.instruction/BaseInstruction
   [binary-string]
   (cond
-    (= (Integer/parseInt binary-string 2) 0x0000000C)
+    (= (Integer/parseUnsignedInt binary-string 2) 0x0000000C)
     {:format :SYSCALL}
 
     (= (subs binary-string 0 6) "000000")
     (R-format-instruction binary-string)
 
     (= (subs binary-string 0 3) "001")
+    (I-format-instruction binary-string)
+
+    (= (subs binary-string 0 3) "100")
+    (I-format-instruction binary-string)
+
+    (= (subs binary-string 0 3) "101")
     (I-format-instruction binary-string)
 
     (= (subs binary-string 0 5) "00010")

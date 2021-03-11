@@ -1,7 +1,8 @@
 (ns isa-mips.controllers.j-ops
   (:require [schema.core :as s]
             [isa-mips.db.memory :as db.memory]
-            [isa-mips.helpers :as helpers]))
+            [isa-mips.helpers :as helpers]
+            [isa-mips.logic.binary :as l.binary]))
 
 (s/defn ^:private jump!
   [addr :- s/Str]
@@ -26,7 +27,7 @@
   [func :- s/Str
    addr :- s/Str]
   (let [func-name (get-in j-table [func :str])]
-    (str func-name " 0x" (Integer/toHexString (Integer/parseInt (str addr "00") 2)))))
+    (str func-name (l.binary/bin->hex-str (str addr "00")))))
 
 (s/defn execute!
   [op-code :- s/Str
