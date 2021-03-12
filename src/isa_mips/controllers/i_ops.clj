@@ -13,7 +13,7 @@
    immediate :- s/Str]
   (let [destiny-reg (Integer/parseInt destiny-reg 2)
         reg-bin     (db.memory/read-value! (Integer/parseInt reg 2))
-        result      (l.binary/signed-sum reg-bin immediate)]
+        result      (l.binary/sum reg-bin immediate)]
     (db.memory/write-value! destiny-reg (helpers/binary-string result))))
 
 (s/defn ^:private addiu!
@@ -22,8 +22,8 @@
    immediate :- s/Str]
   (let [destiny-reg (Integer/parseInt destiny-reg 2)
         reg-bin     (db.memory/read-value! (Integer/parseInt reg 2))
-        result      (l.binary/unsigned-sum reg-bin immediate)]
-    (db.memory/write-value! destiny-reg (helpers/binary-string result))))
+        result      (l.binary/sum reg-bin immediate)]
+    (db.memory/write-value! destiny-reg (helpers/binary-string result 32))))
 
 (s/defn ^:private ori!
   [destiny-reg :- s/Str
@@ -83,11 +83,8 @@
         reg-value    (c.text-section/integer-reg-value! reg)
         data-section c.data-section/data-section-init
         target-addr  (+ reg-value offset)]
-    ;(println "XXXXXXXXXXXXXX")
-    ;(println "LW: target - " target-addr "=" reg-value "+" offset)
     (when-let [memory-value (when (>= target-addr data-section)
                               (db.memory/read-value! target-addr))]
-      ;(println "LW: value - " memory-value)
       (db.memory/write-value! destiny-addr memory-value))))
 
 (s/defn ^:private store-word!
@@ -100,7 +97,6 @@
         data-section  c.data-section/data-section-init
         target-addr   (+ reg-value offset)]
     (when (>= target-addr data-section)
-      #_(println "SW: " target-addr "/" destiny-value)
       (db.memory/write-value! target-addr destiny-value))))
 
 (s/def i-table

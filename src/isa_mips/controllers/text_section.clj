@@ -11,6 +11,6 @@
 
 (defn integer-reg-value!
   [reg]
-  (-> (Integer/parseInt reg 2)
+  (-> (Long/parseLong reg 2)
       (db.memory/read-value!)
-      (Integer/parseInt 2)))
+      (Long/parseLong 2)))

@@ -6,8 +6,8 @@
 (def pc-init 0x00400000)
 
 (s/def ^:private pointers
-  (list {:addr 28 :meta {:name "$gp" :value (helpers/binary-string 0x10008000)}}
-        {:addr 29 :meta {:name "$sp" :value (helpers/binary-string 0x7fffeffc)}}
+  (list {:addr 28 :meta {:name "$gp" :value (helpers/binary-string 0x10008000 32)}}
+        {:addr 29 :meta {:name "$sp" :value (helpers/binary-string 0x7fffeffc 32)}}
         {:addr 30 :meta {:name "$fp" :value (helpers/binary-string 0)}}
         {:addr 31 :meta {:name "$ra" :value (helpers/binary-string 0)}}))
 
@@ -30,19 +30,19 @@
 (defn ^:private get-by-addr
   [address]
   (-> #(= (:addr %) address)
-      (filter @mem)
+      (filterv @mem)
       first))
 
 (defn ^:private get-by-name
   [name]
   (-> #(= (get-in % [:meta :name]) name)
-      (filter @mem)
+      (filterv @mem)
       first))
 
 (defn ^:private update-if
   "Update a element that matches with the pred"
   [coll value keys pred-fn]
-  (map #(if (pred-fn %)
+  (mapv #(if (pred-fn %)
           (assoc-in % keys value) %) coll))
 
 (s/defn read-value! :- s/Str

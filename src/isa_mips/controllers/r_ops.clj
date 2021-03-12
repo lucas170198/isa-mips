@@ -11,7 +11,7 @@
   (let [rd-addr (Integer/parseInt rd 2)
         rs-bin  (db.memory/read-value! (Integer/parseInt rs 2))
         rt-bin  (db.memory/read-value! (Integer/parseInt rt 2))
-        result  (l.binary/signed-sum rs-bin rt-bin)]
+        result  (l.binary/sum rs-bin rt-bin)]
     (db.memory/write-value! rd-addr (helpers/binary-string result 32))))
 
 (s/defn ^:private addu!
@@ -19,7 +19,7 @@
   (let [rd-addr (Integer/parseInt rd 2)
         rs-bin  (db.memory/read-value! (Integer/parseInt rs 2))
         rt-bin  (db.memory/read-value! (Integer/parseInt rt 2))
-        result  (l.binary/unsigned-sum rs-bin rt-bin)]
+        result  (l.binary/sum rs-bin rt-bin)]
     (db.memory/write-value! rd-addr (helpers/binary-string result 32))))
 
 (s/defn ^:private set-less-than!

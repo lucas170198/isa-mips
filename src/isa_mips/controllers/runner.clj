@@ -38,10 +38,6 @@
   (c.syscall/execute!))
 
 (defn run-current-instruction! []
-  ;(println "------------------------- Program counter" (Integer/toHexString @db.memory/pc))
-  ;(println "MAP\n")
-  ;(clojure.pprint/pprint (map #(update-in % [:meta :value] l.binary/bin->hex-str)
-  ;                            (filter #(<= (:addr %) 26) @db.memory/mem)))
   (-> @db.memory/pc
       (db.memory/read-value!)
       (l.instructions/decode-binary-instruction)

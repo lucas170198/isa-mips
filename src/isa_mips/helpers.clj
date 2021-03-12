@@ -9,7 +9,7 @@
   ([x]
    (binary-string x 8))
   ([x n]
-   (let [s (Integer/toBinaryString x)
+   (let [s (Long/toBinaryString x)
          c (count s)]
      (if (< c n)
        (str (apply str (repeat (- n c) "0")) s)

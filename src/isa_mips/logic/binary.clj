@@ -7,16 +7,12 @@
       (- num 65536)
       num)))
 
-(defn unsigned-sum
+(defn sum
   [reg1 reg2]
-  (+ (Integer/parseUnsignedInt reg1 2) (Integer/parseUnsignedInt reg2 2)))
-
-(defn signed-sum
-  [reg1 reg2]
-  (+ (Integer/parseInt reg1 2) (Integer/parseInt reg2 2)))
+  (+ (Long/parseLong  reg1 2) (Long/parseLong  reg2 2)))
 
 (defn bin->hex-str
   [bin-str]
-  (->> (Integer/parseInt bin-str 2)
+  (->> (Long/parseLong bin-str 2)
        Integer/toHexString
        (str " 0x")))
