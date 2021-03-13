@@ -1,7 +1,8 @@
 (ns isa-mips.controllers.syscall
   (:require [schema.core :as s]
             [isa-mips.db.memory :as db.memory]
-            [isa-mips.helpers :as helpers]))
+            [isa-mips.helpers :as helpers]
+            [isa-mips.adapters.number-base :as a.number-base]))
 
 (defn exit! []
   (println)
@@ -10,13 +11,13 @@
 (defn print-int!
   []
   (-> (db.memory/read-value-by-name! "$a0")
-      (Integer/parseInt 2)
+      a.number-base/bin->numeric
       print))
 
 (s/defn ^:private printable-array! []
-  (loop [addr  (Integer/parseInt (db.memory/read-value-by-name! "$a0") 2)
+  (loop [addr  (a.number-base/bin->numeric (db.memory/read-value-by-name! "$a0"))
          array '()]
-    (let [character (Integer/parseInt (db.memory/read-value! addr) 2)]
+    (let [character (a.number-base/bin->numeric (db.memory/read-value! addr))]
       (if (= character 0)
         array
         (recur (inc addr)
@@ -31,7 +32,7 @@
 (defn print-char!
   []
   (-> (db.memory/read-value-by-name! "$a0")
-      (Integer/parseInt 2)
+      a.number-base/bin->numeric
       char
       print))
 
@@ -42,7 +43,7 @@
 
 (s/defn execute!
   []
-  (let [syscall-code (Integer/parseInt (db.memory/read-value-by-name! "$v0") 2)]
+  (let [syscall-code (a.number-base/bin->numeric (db.memory/read-value-by-name! "$v0"))]
     (case syscall-code
       1 (print-int!)
       4 (print-string!)

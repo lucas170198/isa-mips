@@ -5,14 +5,15 @@
             [isa-mips.helpers :as helpers]
             [isa-mips.logic.binary :as l.binary]
             [isa-mips.controllers.text-section :as c.text-section]
+            [isa-mips.adapters.number-base :as a.number-base]
             [isa-mips.controllers.data-section :as c.data-section]))
 
 (s/defn ^:private addi!
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  (let [destiny-reg (Integer/parseInt destiny-reg 2)
-        reg-bin     (db.memory/read-value! (Integer/parseInt reg 2))
+  (let [destiny-reg (a.number-base/bin->numeric destiny-reg)
+        reg-bin     (db.memory/read-value! (a.number-base/bin->numeric reg))
         result      (l.binary/sum reg-bin immediate)]
     (db.memory/write-value! destiny-reg (helpers/binary-string result))))
 
@@ -20,8 +21,8 @@
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  (let [destiny-reg (Integer/parseInt destiny-reg 2)
-        reg-bin     (db.memory/read-value! (Integer/parseInt reg 2))
+  (let [destiny-reg (a.number-base/bin->numeric destiny-reg)
+        reg-bin     (db.memory/read-value! (a.number-base/bin->numeric reg))
         result      (l.binary/sum reg-bin immediate)]
     (db.memory/write-value! destiny-reg (helpers/binary-string result 32))))
 
@@ -29,27 +30,27 @@
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  (let [destiny-reg     (Integer/parseInt destiny-reg 2)
-        immediate-value (Integer/parseInt immediate 2)
-        reg-bin         (db.memory/read-value! (Integer/parseInt reg 2))
-        result          (bit-or immediate-value (Integer/parseInt reg-bin 2))]
+  (let [destiny-reg     (a.number-base/bin->numeric destiny-reg)
+        immediate-value (a.number-base/bin->numeric immediate)
+        reg-bin         (db.memory/read-value! (a.number-base/bin->numeric reg))
+        result          (bit-or immediate-value (a.number-base/bin->numeric reg-bin))]
     (db.memory/write-value! destiny-reg (helpers/binary-string result 32))))
 
 (s/defn ^:private andi
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  (let [destiny-reg     (Integer/parseInt destiny-reg 2)
-        immediate-value (Integer/parseInt immediate 2)
-        reg-bin         (db.memory/read-value! (Integer/parseInt reg 2))
-        result          (bit-and immediate-value (Integer/parseInt reg-bin 2))]
+  (let [destiny-reg     (a.number-base/bin->numeric destiny-reg)
+        immediate-value (a.number-base/bin->numeric immediate)
+        reg-bin         (db.memory/read-value! (a.number-base/bin->numeric reg))
+        result          (bit-and immediate-value (a.number-base/bin->numeric reg-bin))]
     (db.memory/write-value! destiny-reg (helpers/binary-string result 32))))
 
 (s/defn ^:private lui!
   [destiny-reg :- s/Str
    _reg :- s/Str
    immediate :- s/Str]
-  (let [destiny-reg     (Integer/parseInt destiny-reg 2)
+  (let [destiny-reg     (a.number-base/bin->numeric destiny-reg)
         immediate-value (Integer/parseUnsignedInt immediate 2)
         result          (bit-shift-left immediate-value 16)]
     (db.memory/write-value! destiny-reg (helpers/binary-string result 32))))
@@ -58,27 +59,27 @@
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  (let [rt-bin          (db.memory/read-value! (Integer/parseInt destiny-reg 2))
-        rs-bin          (db.memory/read-value! (Integer/parseInt reg 2))
+  (let [rt-bin          (db.memory/read-value! (a.number-base/bin->numeric destiny-reg))
+        rs-bin          (db.memory/read-value! (a.number-base/bin->numeric reg))
         immediate-value (l.binary/bin->complement-of-two-int immediate)]
-    (when (= (Integer/parseInt rt-bin 2) (Integer/parseInt rs-bin 2))
+    (when (= (a.number-base/bin->numeric rt-bin) (a.number-base/bin->numeric rs-bin))
       (db.memory/sum-program-counter (* immediate-value 4)))))
 
 (s/defn ^:private branch-not-equal!
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  (let [rt-bin          (db.memory/read-value! (Integer/parseInt destiny-reg 2))
-        rs-bin          (db.memory/read-value! (Integer/parseInt reg 2))
+  (let [rt-bin          (db.memory/read-value! (a.number-base/bin->numeric destiny-reg))
+        rs-bin          (db.memory/read-value! (a.number-base/bin->numeric reg))
         immediate-value (l.binary/bin->complement-of-two-int immediate)]
-    (when-not (= (Integer/parseInt rt-bin 2) (Integer/parseInt rs-bin 2))
+    (when-not (= (a.number-base/bin->numeric rt-bin) (a.number-base/bin->numeric rs-bin))
       (db.memory/sum-program-counter (* immediate-value 4)))))
 
 (s/defn ^:private load-word!
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  (let [destiny-addr (Integer/parseInt destiny-reg 2)
+  (let [destiny-addr (a.number-base/bin->numeric destiny-reg)
         offset       (l.binary/bin->complement-of-two-int immediate)
         reg-value    (c.text-section/integer-reg-value! reg)
         data-section c.data-section/data-section-init
@@ -91,7 +92,7 @@
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  (let [destiny-value (db.memory/read-value! (Integer/parseInt destiny-reg 2))
+  (let [destiny-value (db.memory/read-value! (a.number-base/bin->numeric destiny-reg))
         offset        (l.binary/bin->complement-of-two-int immediate)
         reg-value     (c.text-section/integer-reg-value! reg)
         data-section  c.data-section/data-section-init
@@ -117,8 +118,8 @@
    immediate :- s/Str]
   (let [operation        (get i-table (subs op-code 0 6))
         func-name        (:str operation)
-        destiny-reg-name (db.memory/read-name! (Integer/parseInt destiny-reg 2))
-        reg-name         (when-not (:load-inst operation) (db.memory/read-name! (Integer/parseInt reg 2)))
+        destiny-reg-name (db.memory/read-name! (a.number-base/bin->numeric destiny-reg))
+        reg-name         (when-not (:load-inst operation) (db.memory/read-name! (a.number-base/bin->numeric reg)))
         unsigned?        (:unsigned operation)
         memory-op?       (:memory-op operation)
         immediate-dec    (if unsigned? (Integer/parseUnsignedInt immediate 2) (l.binary/bin->complement-of-two-int immediate))]
