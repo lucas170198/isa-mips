@@ -8,14 +8,14 @@
 (s/def ^:private pointers
   (list {:addr 28 :meta {:name "$gp" :value (helpers/binary-string 0x10008000 32)}}
         {:addr 29 :meta {:name "$sp" :value (helpers/binary-string 0x7fffeffc 32)}}
-        {:addr 30 :meta {:name "$fp" :value (helpers/binary-string 0)}}
-        {:addr 31 :meta {:name "$ra" :value (helpers/binary-string 0)}}))
+        {:addr 30 :meta {:name "$fp" :value (helpers/binary-string 0 32)}}
+        {:addr 31 :meta {:name "$ra" :value (helpers/binary-string 0 32)}}))
 
 (s/def  pc (atom pc-init))
 
 (def mem
-  (->> (concat (list {:addr 0 :meta {:name "$zero" :value (helpers/binary-string 0)}}
-                     {:addr 1 :meta {:name "$at" :value (helpers/binary-string 0)}})
+  (->> (concat (list {:addr 0 :meta {:name "$zero" :value (helpers/binary-string 0 32)}}
+                     {:addr 1 :meta {:name "$at" :value (helpers/binary-string 0 32)}})
                (helpers/register-class "$v" 2 (range 2))
                (helpers/register-class "$a" 4 (range 4))
                (helpers/register-class "$t" 8 (range 8))

@@ -15,7 +15,7 @@
   (let [destiny-reg (a.number-base/bin->numeric destiny-reg)
         reg-bin     (db.memory/read-value! (a.number-base/bin->numeric reg))
         result      (l.binary/sum reg-bin immediate)]
-    (db.memory/write-value! destiny-reg (helpers/binary-string result))))
+    (db.memory/write-value! destiny-reg (helpers/binary-string result 32))))
 
 (s/defn ^:private addiu!
   [destiny-reg :- s/Str
