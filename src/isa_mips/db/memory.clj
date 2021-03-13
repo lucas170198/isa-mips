@@ -51,7 +51,7 @@
   [coll value keys pred-fn]
   (mapv #(if (pred-fn %)
           (assoc-in % keys value) %) coll))
-
+;TODO: Assert that this have 32bits
 (s/defn read-value! :- s/Str
   [address :- s/Int]
   (get-in (get-by-addr address) [:meta :value]))

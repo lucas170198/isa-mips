@@ -62,7 +62,7 @@
    immediate :- s/Str]
   (let [rt-bin          (db.memory/read-value! (a.number-base/bin->numeric destiny-reg))
         rs-bin          (db.memory/read-value! (a.number-base/bin->numeric reg))
-        immediate-value (l.binary/bin->complement-of-two-int immediate)]
+        immediate-value (a.number-base/bin->numeric (l.binary/signal-extend-32bits immediate))]
     (when (= (a.number-base/bin->numeric rt-bin) (a.number-base/bin->numeric rs-bin))
       (db.memory/sum-program-counter (* immediate-value 4)))))
 
@@ -72,7 +72,7 @@
    immediate :- s/Str]
   (let [rt-bin          (db.memory/read-value! (a.number-base/bin->numeric destiny-reg))
         rs-bin          (db.memory/read-value! (a.number-base/bin->numeric reg))
-        immediate-value (l.binary/bin->complement-of-two-int immediate)]
+        immediate-value (a.number-base/bin->numeric (l.binary/signal-extend-32bits immediate))]
     (when-not (= (a.number-base/bin->numeric rt-bin) (a.number-base/bin->numeric rs-bin))
       (db.memory/sum-program-counter (* immediate-value 4)))))
 
