@@ -1,7 +1,6 @@
 (ns isa-mips.controllers.syscall
   (:require [schema.core :as s]
             [isa-mips.db.memory :as db.memory]
-            [isa-mips.helpers :as helpers]
             [isa-mips.adapters.number-base :as a.number-base]))
 
 (defn exit! []
@@ -39,7 +38,7 @@
 (defn read-integer!
   []
   (let [input-value (Integer/parseInt (read-line))]
-    (db.memory/write-value! 2 (helpers/binary-string input-value 32))))
+    (db.memory/write-value! 2 (a.number-base/binary-string input-value 32))))
 
 (s/defn execute!
   []

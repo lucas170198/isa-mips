@@ -2,7 +2,6 @@
   (:require [schema.core :as s]
             [clojure.string :as string]
             [isa-mips.db.memory :as db.memory]
-            [isa-mips.helpers :as helpers]
             [isa-mips.logic.binary :as l.binary]
             [isa-mips.controllers.text-section :as c.text-section]
             [isa-mips.adapters.number-base :as a.number-base]
@@ -15,7 +14,7 @@
   (let [destiny-reg (a.number-base/bin->numeric destiny-reg)
         reg-bin     (db.memory/read-value! (a.number-base/bin->numeric reg))
         result      (l.binary/sum reg-bin immediate)]
-    (db.memory/write-value! destiny-reg (helpers/binary-string result 32))))
+    (db.memory/write-value! destiny-reg (a.number-base/binary-string result 32))))
 
 (s/defn ^:private addiu!
   [destiny-reg :- s/Str
@@ -24,7 +23,7 @@
   (let [destiny-reg (a.number-base/bin->numeric destiny-reg)
         reg-bin     (db.memory/read-value! (a.number-base/bin->numeric reg))
         result      (l.binary/sum reg-bin immediate)]
-    (db.memory/write-value! destiny-reg (helpers/binary-string result 32))))
+    (db.memory/write-value! destiny-reg (a.number-base/binary-string result 32))))
 
 (s/defn ^:private ori!
   [destiny-reg :- s/Str
@@ -34,7 +33,7 @@
         immediate-value (a.number-base/bin->numeric immediate)
         reg-bin         (db.memory/read-value! (a.number-base/bin->numeric reg))
         result          (bit-or immediate-value (a.number-base/bin->numeric reg-bin))]
-    (db.memory/write-value! destiny-reg (helpers/binary-string result 32))))
+    (db.memory/write-value! destiny-reg (a.number-base/binary-string result 32))))
 
 (s/defn ^:private andi
   [destiny-reg :- s/Str
@@ -44,7 +43,7 @@
         immediate-value (a.number-base/bin->numeric immediate)
         reg-bin         (db.memory/read-value! (a.number-base/bin->numeric reg))
         result          (bit-and immediate-value (a.number-base/bin->numeric reg-bin))]
-    (db.memory/write-value! destiny-reg (helpers/binary-string result 32))))
+    (db.memory/write-value! destiny-reg (a.number-base/binary-string result 32))))
 
 (s/defn ^:private lui!
   [destiny-reg :- s/Str
@@ -53,7 +52,7 @@
   (let [destiny-reg     (a.number-base/bin->numeric destiny-reg)
         immediate-value (Integer/parseUnsignedInt immediate 2)
         result          (bit-shift-left immediate-value 16)]
-    (db.memory/write-value! destiny-reg (helpers/binary-string result 32))))
+    (db.memory/write-value! destiny-reg (a.number-base/binary-string result 32))))
 
 (s/defn ^:private branch-equal!
   [destiny-reg :- s/Str

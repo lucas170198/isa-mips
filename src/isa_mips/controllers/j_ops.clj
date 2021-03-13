@@ -1,7 +1,6 @@
 (ns isa-mips.controllers.j-ops
   (:require [schema.core :as s]
             [isa-mips.db.memory :as db.memory]
-            [isa-mips.helpers :as helpers]
             [isa-mips.logic.binary :as l.binary]
             [isa-mips.adapters.number-base :as a.number-base]))
 
@@ -17,7 +16,7 @@
         complete-addr         (str addr "00")
         next-instruction-addr (+ @db.memory/pc 4)
         target-address        (- (a.number-base/bin->numeric complete-addr) 4)] ;TODO: Rataria, o PC é sempre incrementado no while
-    (db.memory/write-value! ra-addr (helpers/binary-string next-instruction-addr 32))
+    (db.memory/write-value! ra-addr (a.number-base/binary-string next-instruction-addr 32))
     (db.memory/set-program-counter target-address)))
 
 (s/def j-table
