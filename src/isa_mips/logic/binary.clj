@@ -1,4 +1,5 @@
-(ns isa-mips.logic.binary)
+(ns isa-mips.logic.binary
+  (:require [schema.core :as s]))
 
 (defn bin->complement-of-two-int
   [str]
@@ -7,9 +8,22 @@
       (- num 65536)
       num)))
 
+(s/defn signal-extend-nbits
+  [bin :- s/Str
+   n :- s/Int]
+  (let [c (count bin)
+        signal (subs bin 0 1)]
+    (if (< c n)
+      (str (apply str (repeat (- n c) signal)) bin)
+      (subs bin (- c n) c))))
+
+(s/defn signal-extend-32bits
+  [bin :- s/Str]
+  (signal-extend-nbits bin 32))
+
 (defn sum
   [reg1 reg2]
-  (+ (Long/parseLong  reg1 2) (Long/parseLong  reg2 2)))
+  (+ (Integer/parseUnsignedInt  reg1 2) (Integer/parseUnsignedInt  reg2 2)))
 
 (defn bin->hex-str
   [bin-str]
