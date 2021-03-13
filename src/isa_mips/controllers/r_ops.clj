@@ -12,7 +12,7 @@
         rs-bin  (db.memory/read-value! (a.number-base/bin->numeric rs))
         rt-bin  (db.memory/read-value! (a.number-base/bin->numeric rt))
         result  (l.binary/sum rs-bin rt-bin)]
-    (db.memory/write-value! rd-addr (a.number-base/binary-string result 32))))
+    (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32))))
 
 (s/defn ^:private addu!
   [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
@@ -20,7 +20,7 @@
         rs-bin  (db.memory/read-value! (a.number-base/bin->numeric rs))
         rt-bin  (db.memory/read-value! (a.number-base/bin->numeric rt))
         result  (l.binary/sum rs-bin rt-bin)]
-    (db.memory/write-value! rd-addr (a.number-base/binary-string result 32))))
+    (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32))))
 
 (s/defn ^:private set-less-than!
   [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
@@ -28,7 +28,7 @@
         rs-value (c.text-section/integer-reg-value! rs)
         rt-value (c.text-section/integer-reg-value! rt)
         result   (if (< rs-value rt-value) 1 0)]
-    (db.memory/write-value! rd-addr (a.number-base/binary-string result 32))))
+    (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32))))
 
 (s/defn ^:private jump-register!
   [_rd :- s/Str _rs :- s/Str _rt :- s/Str _shamt :- s/Str]
@@ -42,7 +42,7 @@
         rt-value    (-> (a.number-base/bin->numeric rt) (db.memory/read-value!) a.number-base/bin->numeric)
         shamt-value (a.number-base/bin->numeric shamt)
         result      (bit-shift-left rt-value shamt-value)]
-    (db.memory/write-value! rd-addr (a.number-base/binary-string result 32))))
+    (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32))))
 
 (s/defn ^:private shift-right!
   [rd :- s/Str _rs :- s/Str rt :- s/Str shamt :- s/Str]
@@ -50,7 +50,7 @@
         rt-value    (c.text-section/integer-reg-value! rt)
         shamt-value (a.number-base/bin->numeric shamt)
         result      (bit-shift-right rt-value shamt-value)]
-    (db.memory/write-value! rd-addr (a.number-base/binary-string result 32))))
+    (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32))))
 
 ;TODO: Table model schema
 (s/def r-table

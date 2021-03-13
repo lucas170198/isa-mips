@@ -15,45 +15,46 @@
         reg-bin          (db.memory/read-value! (a.number-base/bin->numeric reg))
         immediate-signal (l.binary/signal-extend-32bits immediate)
         result           (l.binary/sum reg-bin immediate-signal)]
-    (db.memory/write-value! destiny-reg (a.number-base/binary-string result 32))))
+    (db.memory/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32))))
 
 (s/defn ^:private addiu!
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  (let [destiny-reg (a.number-base/bin->numeric destiny-reg)
-        reg-bin     (db.memory/read-value! (a.number-base/bin->numeric reg))
-        result      (l.binary/sum reg-bin immediate)]
-    (db.memory/write-value! destiny-reg (a.number-base/binary-string result 32))))
+  (let [destiny-reg      (a.number-base/bin->numeric destiny-reg)
+        reg-bin          (db.memory/read-value! (a.number-base/bin->numeric reg))
+        immediate-signal (l.binary/signal-extend-32bits immediate)
+        result           (l.binary/sum reg-bin immediate-signal)]
+    (db.memory/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32))))
 
 (s/defn ^:private ori!
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
   (let [destiny-reg     (a.number-base/bin->numeric destiny-reg)
-        immediate-value (a.number-base/bin->numeric immediate)
+        immediate-value (a.number-base/bin->numeric (l.binary/zero-extend-32bits immediate))
         reg-bin         (db.memory/read-value! (a.number-base/bin->numeric reg))
         result          (bit-or immediate-value (a.number-base/bin->numeric reg-bin))]
-    (db.memory/write-value! destiny-reg (a.number-base/binary-string result 32))))
+    (db.memory/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32))))
 
 (s/defn ^:private andi
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
   (let [destiny-reg     (a.number-base/bin->numeric destiny-reg)
-        immediate-value (a.number-base/bin->numeric immediate)
+        immediate-value (a.number-base/bin->numeric (l.binary/zero-extend-32bits immediate))
         reg-bin         (db.memory/read-value! (a.number-base/bin->numeric reg))
         result          (bit-and immediate-value (a.number-base/bin->numeric reg-bin))]
-    (db.memory/write-value! destiny-reg (a.number-base/binary-string result 32))))
+    (db.memory/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32))))
 
 (s/defn ^:private lui!
   [destiny-reg :- s/Str
    _reg :- s/Str
    immediate :- s/Str]
   (let [destiny-reg     (a.number-base/bin->numeric destiny-reg)
-        immediate-value (Integer/parseUnsignedInt immediate 2)
+        immediate-value (a.number-base/bin->numeric immediate)
         result          (bit-shift-left immediate-value 16)]
-    (db.memory/write-value! destiny-reg (a.number-base/binary-string result 32))))
+    (db.memory/write-value! destiny-reg (a.number-base/binary-string-zero-extend result 32))))
 
 (s/defn ^:private branch-equal!
   [destiny-reg :- s/Str

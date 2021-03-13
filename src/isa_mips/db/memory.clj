@@ -10,19 +10,19 @@
   (map-indexed (fn [idx _]
                  {:addr (+ idx init-idx)
                   :meta {:name  (str prefix idx)
-                         :value (a.number-base/binary-string 0)}}) vector))
+                         :value (a.number-base/binary-string-zero-extend 0)}}) vector))
 
 (s/def ^:private pointers
-  (list {:addr 28 :meta {:name "$gp" :value (a.number-base/binary-string 0x10008000 32)}}
-        {:addr 29 :meta {:name "$sp" :value (a.number-base/binary-string 0x7fffeffc 32)}}
-        {:addr 30 :meta {:name "$fp" :value (a.number-base/binary-string 0 32)}}
-        {:addr 31 :meta {:name "$ra" :value (a.number-base/binary-string 0 32)}}))
+  (list {:addr 28 :meta {:name "$gp" :value (a.number-base/binary-string-zero-extend 0x10008000 32)}}
+        {:addr 29 :meta {:name "$sp" :value (a.number-base/binary-string-zero-extend 0x7fffeffc 32)}}
+        {:addr 30 :meta {:name "$fp" :value (a.number-base/binary-string-zero-extend 0 32)}}
+        {:addr 31 :meta {:name "$ra" :value (a.number-base/binary-string-zero-extend 0 32)}}))
 
 (s/def  pc (atom pc-init))
 
 (def mem
-  (->> (concat (list {:addr 0 :meta {:name "$zero" :value (a.number-base/binary-string 0 32)}}
-                     {:addr 1 :meta {:name "$at" :value (a.number-base/binary-string 0 32)}})
+  (->> (concat (list {:addr 0 :meta {:name "$zero" :value (a.number-base/binary-string-zero-extend 0 32)}}
+                     {:addr 1 :meta {:name "$at" :value (a.number-base/binary-string-zero-extend 0 32)}})
                (register-class "$v" 2 (range 2))
                (register-class "$a" 4 (range 4))
                (register-class "$t" 8 (range 8))

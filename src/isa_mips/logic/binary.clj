@@ -17,6 +17,18 @@
       (str (apply str (repeat (- n c) signal)) bin)
       (subs bin (- c n) c))))
 
+(s/defn zero-extend-nbits
+  [bin :- s/Str
+   n :- s/Int]
+  (let [c (count bin)]
+    (if (< c n)
+      (str (apply str (repeat (- n c) "0")) bin)
+      (subs bin (- c n) c))))
+
+(s/defn zero-extend-32bits
+  [bin :- s/Str]
+  (zero-extend-nbits bin 32))
+
 (s/defn signal-extend-32bits
   [bin :- s/Str]
   (signal-extend-nbits bin 32))

@@ -20,7 +20,7 @@
   [byte-array :- [Byte]]
   (for [i (range 0 (count byte-array) 4)]
     (->> (little-endian-instruction byte-array i)
-         (map a.number-base/binary-string)
+         (map a.number-base/binary-string-zero-extend)
          string/join)))
 
 (defn file->bytes

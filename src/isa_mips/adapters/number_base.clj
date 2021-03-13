@@ -1,18 +1,30 @@
 (ns isa-mips.adapters.number-base
-  (:require [schema.core :as s]))
+  (:require [schema.core :as s]
+            [isa-mips.logic.binary :as l.binary]))
 
 (s/defn bin->numeric
   [bin :- s/Str]
   (Integer/parseUnsignedInt bin 2))
 
-(defn binary-string
+(defn binary-string-zero-extend
   "Returns a binary representation of a byte value.
   reference: https://gist.github.com/benzap/7cda95aeaeecac12b5763a72ddb89310 "
   ([x]
-   (binary-string x 8))
+   (binary-string-zero-extend x 8))
   ([x n]
    (let [s (Integer/toBinaryString x)
          c (count s)]
      (if (< c n)
        (str (apply str (repeat (- n c) "0")) s)
        (subs s (- (count s) n) (count s))))))
+
+(defn binary-string-signal-extend
+  ([x]
+   (binary-string-signal-extend x 8))
+  ([x n]
+   (let [bin (Integer/toBinaryString x)
+         bin-sig (if (pos? x) ;putting the right signal
+                   (str "0" bin)
+                   bin)]
+
+     (l.binary/signal-extend-nbits bin-sig n))))

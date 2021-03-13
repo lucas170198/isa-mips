@@ -8,4 +8,4 @@
   "Store the data section bytes, starting by the addr 0x10010000"
   [byte-file]
   (dotimes [n (count byte-file)]
-    (db.memory/write-value! (+ data-section-init n) (a.number-base/binary-string (nth byte-file n)))))
+    (db.memory/write-value! (+ data-section-init n) (a.number-base/binary-string-zero-extend (nth byte-file n)))))

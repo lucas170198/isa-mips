@@ -38,7 +38,7 @@
 (defn read-integer!
   []
   (let [input-value (Integer/parseInt (read-line))]
-    (db.memory/write-value! 2 (a.number-base/binary-string input-value 32))))
+    (db.memory/write-value! 2 (a.number-base/binary-string-zero-extend input-value 32))))
 
 (s/defn execute!
   []
