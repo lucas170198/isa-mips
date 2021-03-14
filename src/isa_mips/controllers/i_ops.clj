@@ -53,26 +53,27 @@
         result          (str immediate (apply str (repeat 16 "0")))]
     (db.memory/write-value! destiny-reg result)))
 
-;TODO
-(s/defn ^:private branch-equal!
-  [destiny-reg :- s/Str
-   reg :- s/Str
-   immediate :- s/Str]
-  (let [rt-bin          (db.memory/read-value! (a.number-base/bin->numeric destiny-reg))
-        rs-bin          (db.memory/read-value! (a.number-base/bin->numeric reg))
-        immediate-value (a.number-base/bin->numeric (l.binary/signal-extend-32bits immediate))]
-    (when (= (a.number-base/bin->numeric rt-bin) (a.number-base/bin->numeric rs-bin))
-      (db.memory/sum-program-counter (* immediate-value 4)))))
-;TODO
 (s/defn ^:private branch-not-equal!
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
   (let [rt-bin          (db.memory/read-value! (a.number-base/bin->numeric destiny-reg))
         rs-bin          (db.memory/read-value! (a.number-base/bin->numeric reg))
-        immediate-value (a.number-base/bin->numeric (l.binary/signal-extend-32bits immediate))]
-    (when-not (= (a.number-base/bin->numeric rt-bin) (a.number-base/bin->numeric rs-bin))
-      (db.memory/sum-program-counter (* immediate-value 4)))))
+        branch-addr     (l.binary/signal-extend-32bits (str immediate "00"))
+        immediate-value (a.number-base/bin->numeric branch-addr)]
+    (when (not= (a.number-base/bin->numeric rt-bin) (a.number-base/bin->numeric rs-bin))
+      (db.memory/sum-program-counter immediate-value))))
+
+(s/defn ^:private branch-equal!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   immediate :- s/Str]
+  (let [rt-bin          (db.memory/read-value! (a.number-base/bin->numeric destiny-reg))
+        rs-bin          (db.memory/read-value! (a.number-base/bin->numeric reg))
+        branch-addr     (l.binary/signal-extend-32bits (str immediate "00"))
+        immediate-value (a.number-base/bin->numeric branch-addr)]
+    (when (= (a.number-base/bin->numeric rt-bin) (a.number-base/bin->numeric rs-bin))
+      (db.memory/sum-program-counter immediate-value))))
 
 (s/defn ^:private load-word!
   [destiny-reg :- s/Str

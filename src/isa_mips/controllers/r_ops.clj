@@ -3,7 +3,6 @@
             [clojure.string :as string]
             [isa-mips.db.memory :as db.memory]
             [isa-mips.logic.binary :as l.binary]
-            [isa-mips.controllers.text-section :as c.text-section]
             [isa-mips.adapters.number-base :as a.number-base]))
 
 (s/defn ^:private add!
