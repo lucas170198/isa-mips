@@ -6,14 +6,13 @@
             [isa-mips.controllers.text-section :as c.text-section]
             [isa-mips.adapters.number-base :as a.number-base]))
 
-;TODO
 (s/defn ^:private add!
   [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
   (let [rd-addr (a.number-base/bin->numeric rd)
         rs-bin  (db.memory/read-value! (a.number-base/bin->numeric rs))
         rt-bin  (db.memory/read-value! (a.number-base/bin->numeric rt))
         result  (l.binary/sum rs-bin rt-bin)]
-    (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32))))
+    (db.memory/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32))))
 
 (s/defn ^:private addu!
   [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
@@ -21,8 +20,9 @@
         rs-bin  (db.memory/read-value! (a.number-base/bin->numeric rs))
         rt-bin  (db.memory/read-value! (a.number-base/bin->numeric rt))
         result  (l.binary/sum rs-bin rt-bin)]
-    (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32))))
+    (db.memory/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32))))
 
+;TODO
 (s/defn ^:private set-less-than!
   [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
   (let [rd-addr  (a.number-base/bin->numeric rd)

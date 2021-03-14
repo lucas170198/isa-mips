@@ -3,9 +3,7 @@
             [clojure.string :as string]
             [isa-mips.db.memory :as db.memory]
             [isa-mips.logic.binary :as l.binary]
-            [isa-mips.controllers.text-section :as c.text-section]
-            [isa-mips.adapters.number-base :as a.number-base]
-            [isa-mips.controllers.data-section :as c.data-section]))
+            [isa-mips.adapters.number-base :as a.number-base]))
 
 (s/defn ^:private addi!
   [destiny-reg :- s/Str
@@ -46,15 +44,14 @@
         reg-bin         (db.memory/read-value! (a.number-base/bin->numeric reg))
         result          (bit-and immediate-value (a.number-base/bin->numeric reg-bin))]
     (db.memory/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32))))
-;TODO
+
 (s/defn ^:private lui!
   [destiny-reg :- s/Str
    _reg :- s/Str
    immediate :- s/Str]
   (let [destiny-reg     (a.number-base/bin->numeric destiny-reg)
-        immediate-value (a.number-base/bin->numeric immediate)
-        result          (bit-shift-left immediate-value 16)]
-    (db.memory/write-value! destiny-reg (a.number-base/binary-string-zero-extend result 32))))
+        result          (str immediate (apply str (repeat 16 "0")))]
+    (db.memory/write-value! destiny-reg result)))
 
 ;TODO
 (s/defn ^:private branch-equal!
