@@ -68,6 +68,7 @@
    shamt :- s/Str]
   (let [operation         (get r-table func)
         func-name         (:str operation)
+        _assert           (assert (not (nil? operation)) "Operation not found on r-table")
         jump-instruction? (:jump-instruction operation)
         shamt?            (:shamt operation)
         destiny-reg-name  (when-not jump-instruction? (db.memory/read-name! (a.number-base/bin->numeric destiny-reg)))

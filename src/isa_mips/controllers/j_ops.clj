@@ -26,7 +26,8 @@
 (s/defn operation-str! :- s/Str
   [func :- s/Str
    addr :- s/Str]
-  (let [func-name (get-in j-table [func :str])]
+  (let [func-name (get-in j-table [func :str])
+        _assert   (assert (not (nil? func-name)) "Operation not found on j-table")]
     (str func-name (l.binary/bin->hex-str (str addr "00")))))
 
 (s/defn execute!

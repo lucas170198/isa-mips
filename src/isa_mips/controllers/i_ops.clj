@@ -119,6 +119,7 @@
    immediate :- s/Str]
   (let [operation        (get i-table (subs op-code 0 6))
         func-name        (:str operation)
+        _assert          (assert (not (nil? func-name)) "Operation not found on i-table")
         destiny-reg-name (db.memory/read-name! (a.number-base/bin->numeric destiny-reg))
         reg-name         (when-not (:load-inst operation) (db.memory/read-name! (a.number-base/bin->numeric reg)))
         unsigned?        (:unsigned operation)

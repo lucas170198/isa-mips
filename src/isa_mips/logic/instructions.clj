@@ -48,4 +48,7 @@
     (I-format-instruction binary-string)
 
     (= (subs binary-string 0 5) "00001")
-    (J-format-instruction binary-string)))
+    (J-format-instruction binary-string)
+
+    :else
+    (throw (Exception. "Op code not found"))))
