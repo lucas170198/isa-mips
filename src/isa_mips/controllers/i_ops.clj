@@ -75,7 +75,7 @@
         immediate-value (a.number-base/bin->numeric (l.binary/signal-extend-32bits immediate))]
     (when-not (= (a.number-base/bin->numeric rt-bin) (a.number-base/bin->numeric rs-bin))
       (db.memory/sum-program-counter (* immediate-value 4)))))
-
+;TODO
 (s/defn ^:private load-word!
   [destiny-reg :- s/Str
    reg :- s/Str

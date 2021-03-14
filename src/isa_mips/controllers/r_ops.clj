@@ -6,6 +6,7 @@
             [isa-mips.controllers.text-section :as c.text-section]
             [isa-mips.adapters.number-base :as a.number-base]))
 
+;TODO
 (s/defn ^:private add!
   [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
   (let [rd-addr (a.number-base/bin->numeric rd)
@@ -31,10 +32,9 @@
     (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32))))
 
 (s/defn ^:private jump-register!
-  [_rd :- s/Str _rs :- s/Str _rt :- s/Str _shamt :- s/Str]
-  (let [ra             (db.memory/read-value-by-name! "$ra")
-        target-address (- (a.number-base/bin->numeric ra) 4)]       ;TODO: Rataria, PC
-    (db.memory/set-program-counter target-address)))
+  [_rd :- s/Str rs :- s/Str _rt :- s/Str _shamt :- s/Str]
+  (let [target-address             (db.memory/read-value! (a.number-base/bin->numeric rs))]
+    (db.memory/set-program-counter (- (a.number-base/bin->numeric target-address) 4))))
 
 (s/defn ^:private shift-left!
   [rd :- s/Str _rs :- s/Str rt :- s/Str shamt :- s/Str]

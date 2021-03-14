@@ -6,18 +6,18 @@
 
 (s/defn ^:private jump!
   [addr :- s/Str]
-  (let [complete-addr  (str addr "00")
-        target-address (- (a.number-base/bin->numeric complete-addr) 4)] ;TODO: Rataria, o PC é sempre incrementado no while
-    (db.memory/set-program-counter target-address)))
+  (let [next-inst     (a.number-base/binary-string-zero-extend (+ @db.memory/pc 4) 32)
+        complete-addr (a.number-base/bin->numeric (str (subs next-inst 0 4) addr "00"))]
+    (db.memory/set-program-counter (- complete-addr 4))))
 
 (s/defn ^:private jump-and-link!
   [addr :- s/Str]
   (let [ra-addr               31
-        complete-addr         (str addr "00")
-        next-instruction-addr (+ @db.memory/pc 4)
-        target-address        (- (a.number-base/bin->numeric complete-addr) 4)] ;TODO: Rataria, o PC é sempre incrementado no while
+        next-inst             (a.number-base/binary-string-zero-extend (+ @db.memory/pc 4) 32)
+        jump-addr             (a.number-base/bin->numeric (str (subs next-inst 0 4) addr "00"))
+        next-instruction-addr (+ @db.memory/pc 8)]
     (db.memory/write-value! ra-addr (a.number-base/binary-string-zero-extend next-instruction-addr 32))
-    (db.memory/set-program-counter target-address)))
+    (db.memory/set-program-counter (- jump-addr 4))))
 
 (s/def j-table
   {"000010" {:str "j" :action jump!}
