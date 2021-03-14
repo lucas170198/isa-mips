@@ -22,13 +22,13 @@
         result  (l.binary/sum rs-bin rt-bin)]
     (db.memory/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32))))
 
-;TODO
 (s/defn ^:private set-less-than!
   [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
   (let [rd-addr  (a.number-base/bin->numeric rd)
-        rs-value (c.text-section/integer-reg-value! rs)
-        rt-value (c.text-section/integer-reg-value! rt)
-        result   (if (< rs-value rt-value) 1 0)]
+        rs-bin   (db.memory/read-value! (a.number-base/bin->numeric rs))
+        rt-bin   (db.memory/read-value! (a.number-base/bin->numeric rt))
+        result   (if (< (a.number-base/bin->numeric rs-bin)
+                        (a.number-base/bin->numeric rt-bin)) 1 0)]
     (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32))))
 
 (s/defn ^:private jump-register!
@@ -36,6 +36,7 @@
   (let [target-address             (db.memory/read-value! (a.number-base/bin->numeric rs))]
     (db.memory/set-program-counter (- (a.number-base/bin->numeric target-address) 4))))
 
+;TODO
 (s/defn ^:private shift-left!
   [rd :- s/Str _rs :- s/Str rt :- s/Str shamt :- s/Str]
   (let [rd-addr     (a.number-base/bin->numeric rd)
