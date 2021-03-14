@@ -36,14 +36,13 @@
   (let [target-address             (db.memory/read-value! (a.number-base/bin->numeric rs))]
     (db.memory/set-program-counter (- (a.number-base/bin->numeric target-address) 4))))
 
-;TODO
 (s/defn ^:private shift-left!
   [rd :- s/Str _rs :- s/Str rt :- s/Str shamt :- s/Str]
   (let [rd-addr     (a.number-base/bin->numeric rd)
         rt-bin      (db.memory/read-value! (a.number-base/bin->numeric rt))
         shamt-value (a.number-base/bin->numeric shamt)
         result      (bit-shift-left (a.number-base/bin->numeric rt-bin) shamt-value)]
-    (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32))))
+    (db.memory/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32))))
 
 (s/defn ^:private shift-right!
   [rd :- s/Str _rs :- s/Str rt :- s/Str shamt :- s/Str]
@@ -51,7 +50,7 @@
         rt-bin      (db.memory/read-value! (a.number-base/bin->numeric rt))
         shamt-value (a.number-base/bin->numeric shamt)
         result      (bit-shift-right (a.number-base/bin->numeric rt-bin) shamt-value)]
-    (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32))))
+    (db.memory/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32))))
 
 (s/def r-table
   {"100000" {:str "add" :action add!}
