@@ -121,7 +121,7 @@
         memory-op?       (:memory-op operation)
         immediate-dec    (if unsigned? (Integer/parseUnsignedInt immediate 2) (l.binary/bin->complement-of-two-int immediate))]
     (if memory-op?
-      (str func-name " " destiny-reg ", " (l.binary/bin->hex-str immediate) "(" reg-name ")")
+      (str func-name " " destiny-reg-name ", " (l.binary/bin->hex-str immediate) "(" reg-name ")")
       (str func-name " " (string/join ", " (remove nil? [destiny-reg-name reg-name immediate-dec]))))))
 
 (s/defn execute!

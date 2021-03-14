@@ -5,6 +5,8 @@
 (defn bitString [size]
   (s/constrained s/Str #(= (count %) size)))
 
+(s/defschema fourBytesString (bitString 32))
+
 (s/defschema BaseInstruction
   (abstract-map/abstract-map-schema
    :format

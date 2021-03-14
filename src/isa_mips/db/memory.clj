@@ -1,7 +1,8 @@
 (ns isa-mips.db.memory
   (:require [schema.core :as s]
             [isa-mips.models.memory :as m.memory]
-            [isa-mips.adapters.number-base :as a.number-base]))
+            [isa-mips.adapters.number-base :as a.number-base]
+            [isa-mips.models.instruction :as m.instruction]))
 
 (def pc-init 0x00400000)
 
@@ -51,24 +52,24 @@
   [coll value keys pred-fn]
   (mapv #(if (pred-fn %)
           (assoc-in % keys value) %) coll))
-;TODO: Assert that this have 32bits
-(s/defn read-value! :- s/Str
+
+(s/defn read-value! :- m.instruction/fourBytesString
   [address :- s/Int]
   (get-in (get-by-addr address) [:meta :value]))
 
-(s/defn read-name! :- s/Str
+(s/defn read-name! :- m.instruction/fourBytesString
   [address :- s/Int]
   (get-in (get-by-addr address) [:meta :name]))
 
 (s/defn write-value! :- (s/maybe m.memory/Store)
   [address :- s/Int
-   value :- s/Str]
+   value :- m.instruction/fourBytesString]
   (when-not (= address 0)
     (if (nil? (get-by-addr address))
       (swap! mem conj {:addr address :meta {:value value}})
       (reset! mem (update-if @mem value [:meta :value] #(= (:addr %) address))))))
 
-(s/defn read-value-by-name! :- s/Str
+(s/defn read-value-by-name! :- m.instruction/fourBytesString
   [name :- s/Str]
   (get-in (get-by-name name) [:meta :value]))
 
