@@ -37,7 +37,6 @@
   (c.syscall/execute!))
 
 (defn run-current-instruction! []
-  #_(println "\nPC: " (Integer/toHexString @db.memory/pc))
   (-> @db.memory/pc
       (db.memory/read-value!)
       (l.instructions/decode-binary-instruction)

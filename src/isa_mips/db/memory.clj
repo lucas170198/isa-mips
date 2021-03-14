@@ -78,7 +78,6 @@
 
 (s/defn sum-program-counter
   [value :- s/Int]
-  #_(println "SUM PC: " (Integer/toHexString (+ pc value)))
   (swap! pc + value))
 
 (s/defn set-program-counter

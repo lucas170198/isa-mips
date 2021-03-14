@@ -11,7 +11,8 @@
   []
   (-> (db.memory/read-value-by-name! "$a0")
       a.number-base/bin->numeric
-      print))
+      print)
+  (flush))
 
 (s/defn ^:private printable-array! []
   (loop [addr  (a.number-base/bin->numeric (db.memory/read-value-by-name! "$a0"))
@@ -26,14 +27,16 @@
   []
   (->> (printable-array!)
        (apply str)
-       println))
+       print)
+  (flush))
 
 (defn print-char!
   []
   (-> (db.memory/read-value-by-name! "$a0")
       a.number-base/bin->numeric
       char
-      print))
+      print)
+  (flush))
 
 (defn read-integer!
   []
