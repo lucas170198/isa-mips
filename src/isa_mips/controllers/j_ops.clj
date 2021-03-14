@@ -15,7 +15,7 @@
   (let [ra-addr               31
         next-inst             (a.number-base/binary-string-zero-extend (+ @db.memory/pc 4) 32)
         jump-addr             (a.number-base/bin->numeric (str (subs next-inst 0 4) addr "00"))
-        next-instruction-addr (+ @db.memory/pc 8)]
+        next-instruction-addr (+ @db.memory/pc 4)]
     (db.memory/write-value! ra-addr (a.number-base/binary-string-zero-extend next-instruction-addr 32))
     (db.memory/set-program-counter (- jump-addr 4))))
 

@@ -6,8 +6,7 @@
             [isa-mips.logic.instructions :as l.instructions]
             [isa-mips.controllers.i-ops :as c.i-ops]
             [isa-mips.controllers.syscall :as c.syscall]
-            [isa-mips.controllers.j-ops :as c.j-ops]
-            [isa-mips.logic.binary :as l.binary]))
+            [isa-mips.controllers.j-ops :as c.j-ops]))
 
 (defmulti execute-instruction! "Return nil for success execution"
           (fn [instruction] (:format instruction)))

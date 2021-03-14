@@ -39,20 +39,19 @@
 (s/defn ^:private shift-left!
   [rd :- s/Str _rs :- s/Str rt :- s/Str shamt :- s/Str]
   (let [rd-addr     (a.number-base/bin->numeric rd)
-        rt-value    (-> (a.number-base/bin->numeric rt) (db.memory/read-value!) a.number-base/bin->numeric)
+        rt-bin      (db.memory/read-value! (a.number-base/bin->numeric rt))
         shamt-value (a.number-base/bin->numeric shamt)
-        result      (bit-shift-left rt-value shamt-value)]
+        result      (bit-shift-left (a.number-base/bin->numeric rt-bin) shamt-value)]
     (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32))))
 
 (s/defn ^:private shift-right!
   [rd :- s/Str _rs :- s/Str rt :- s/Str shamt :- s/Str]
   (let [rd-addr     (a.number-base/bin->numeric rd)
-        rt-value    (c.text-section/integer-reg-value! rt)
+        rt-bin      (db.memory/read-value! (a.number-base/bin->numeric rt))
         shamt-value (a.number-base/bin->numeric shamt)
-        result      (bit-shift-right rt-value shamt-value)]
+        result      (bit-shift-right (a.number-base/bin->numeric rt-bin) shamt-value)]
     (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32))))
 
-;TODO: Table model schema
 (s/def r-table
   {"100000" {:str "add" :action add!}
    "100001" {:str "addu" :action addu! :unsigned true}
