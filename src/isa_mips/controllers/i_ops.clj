@@ -96,6 +96,11 @@
         target-addr   (l.binary/sum reg-bin offset)]
     (db.memory/write-value! target-addr destiny-value)))
 
+(s/defn set-less-then!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   immediate :- s/Str] nil)
+
 (s/def i-table
   {"001000" {:str "addi" :action addi!}
    "001001" {:str "addiu" :action addiu! :unsigned true}
@@ -105,7 +110,8 @@
    "000100" {:str "beq" :action branch-equal!}
    "000101" {:str "bne" :action branch-not-equal!}
    "100011" {:str "lw" :action load-word! :memory-op true}
-   "101011" {:str "sw" :action store-word! :memory-op true}})
+   "101011" {:str "sw" :action store-word! :memory-op true}
+   "001010" {:str "slti" :action set-less-then!}})
 
 (s/defn operation-str! :- s/Str
   [op-code :- s/Str

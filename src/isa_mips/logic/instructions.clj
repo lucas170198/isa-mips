@@ -32,6 +32,9 @@
     (= (Integer/parseUnsignedInt binary-string 2) 0x0000000C)
     {:format :SYSCALL}
 
+    (= (Integer/parseUnsignedInt binary-string 2) 0x00000000)
+    {:format :NOP}
+
     (= (subs binary-string 0 6) "000000")
     (R-format-instruction binary-string)
 

@@ -11,6 +11,10 @@
   [_instruction]
   "syscall")
 
+(defmethod instruction-string! :NOP
+  [_instruction]
+  "nop")
+
 (s/defmethod instruction-string! :R
   [{func :funct
     destiny-reg :rd
