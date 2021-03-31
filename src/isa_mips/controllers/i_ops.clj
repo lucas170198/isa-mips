@@ -49,8 +49,8 @@
   [destiny-reg :- s/Str
    _reg :- s/Str
    immediate :- s/Str]
-  (let [destiny-reg     (a.number-base/bin->numeric destiny-reg)
-        result          (str immediate (apply str (repeat 16 "0")))]
+  (let [destiny-reg (a.number-base/bin->numeric destiny-reg)
+        result      (str immediate (apply str (repeat 16 "0")))]
     (db.memory/write-value! destiny-reg result)))
 
 (s/defn ^:private branch-not-equal!
@@ -96,10 +96,16 @@
         target-addr   (l.binary/sum reg-bin offset)]
     (db.memory/write-value! target-addr destiny-value)))
 
-(s/defn set-less-then!
+(s/defn ^:private imm-set-less-then!
   [destiny-reg :- s/Str
    reg :- s/Str
-   immediate :- s/Str] nil)
+   immediate :- s/Str]
+  (let [immediate-value (a.number-base/bin->numeric (l.binary/signal-extend-32bits immediate))
+        reg-bin         (db.memory/read-value! (a.number-base/bin->numeric reg))
+        destiny-reg     (a.number-base/bin->numeric destiny-reg)
+        result          (if (< (a.number-base/bin->numeric reg-bin)
+                               immediate-value) 1 0)]
+    (db.memory/write-value! destiny-reg (a.number-base/binary-string-zero-extend result 32))))
 
 (s/def i-table
   {"001000" {:str "addi" :action addi!}
@@ -111,7 +117,7 @@
    "000101" {:str "bne" :action branch-not-equal!}
    "100011" {:str "lw" :action load-word! :memory-op true}
    "101011" {:str "sw" :action store-word! :memory-op true}
-   "001010" {:str "slti" :action set-less-then!}})
+   "001010" {:str "slti" :action imm-set-less-then!}})
 
 (s/defn operation-str! :- s/Str
   [op-code :- s/Str

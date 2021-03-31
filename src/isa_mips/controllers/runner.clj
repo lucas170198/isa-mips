@@ -36,6 +36,8 @@
   [_]
   (c.syscall/execute!))
 
+(s/defmethod execute-instruction! :NOP [_])
+
 (defn run-current-instruction! []
   (-> @db.memory/pc
       (db.memory/read-value!)
