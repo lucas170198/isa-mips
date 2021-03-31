@@ -12,7 +12,7 @@
   (let [destiny-reg      (a.number-base/bin->numeric destiny-reg)
         reg-bin          (db.memory/read-value! (a.number-base/bin->numeric reg))
         immediate-signal (l.binary/signal-extend-32bits immediate)
-        result           (l.binary/sum reg-bin immediate-signal)]
+        result           (l.binary/signed-sum reg-bin immediate-signal)]
     (db.memory/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32))))
 
 (s/defn ^:private addiu!

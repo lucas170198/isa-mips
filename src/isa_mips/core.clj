@@ -1,4 +1,5 @@
 (ns isa-mips.core
+  (:gen-class)
   (:require [isa-mips.adapters.file-input :as a.file-input]
             [isa-mips.handler :as handler]))
 

@@ -10,7 +10,7 @@
   (let [rd-addr (a.number-base/bin->numeric rd)
         rs-bin  (db.memory/read-value! (a.number-base/bin->numeric rs))
         rt-bin  (db.memory/read-value! (a.number-base/bin->numeric rt))
-        result  (l.binary/sum rs-bin rt-bin)]
+        result  (l.binary/signed-sum rs-bin rt-bin)]
     (db.memory/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32))))
 
 (s/defn ^:private addu!
