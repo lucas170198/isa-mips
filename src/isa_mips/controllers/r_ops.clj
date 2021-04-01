@@ -52,7 +52,12 @@
     (db.memory/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32))))
 
 (s/defn r-jump-and-link!
-  [rd :- s/Str rs :- s/Str rt :- s/Str shamt :- s/Str])
+  [rd :- s/Str rs :- s/Str _rt :- s/Str _shamt :- s/Str]
+  (let [rd-addr               (a.number-base/bin->numeric rd)
+        jump-addr             (db.memory/read-value! (a.number-base/bin->numeric rs))
+        next-instruction-addr (+ @db.memory/pc 4)]
+    (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend next-instruction-addr 32))
+    (db.memory/set-program-counter (- (Integer/parseUnsignedInt jump-addr 2) 4))))
 
 (s/def r-table
   {"100000" {:str "add" :action add!}
