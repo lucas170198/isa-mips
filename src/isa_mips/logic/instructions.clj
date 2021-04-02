@@ -54,4 +54,4 @@
     (J-format-instruction binary-string)
 
     :else
-    (throw (Exception. "Op code not found"))))
+    (throw (Exception. (str "Op code not found: " binary-string)))))

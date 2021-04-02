@@ -26,7 +26,9 @@
 (defn file->bytes
   "reference: https://clojuredocs.org/clojure.java.io/input-stream"
   [file-path section]
-  (with-open [xin  (io/input-stream (str file-path "." section))
-              xout (ByteArrayOutputStream.)]
-    (io/copy xin xout)
-    (.toByteArray xout)))
+  (try
+    (with-open [xin  (io/input-stream (str file-path "." section))
+                xout (ByteArrayOutputStream.)]
+      (io/copy xin xout)
+      (.toByteArray xout))
+    (catch Exception _ nil)))
