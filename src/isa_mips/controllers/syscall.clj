@@ -1,7 +1,8 @@
 (ns isa-mips.controllers.syscall
   (:require [schema.core :as s]
             [isa-mips.db.memory :as db.memory]
-            [isa-mips.adapters.number-base :as a.number-base]))
+            [isa-mips.adapters.number-base :as a.number-base]
+            [isa-mips.db.coproc1 :as db.coproc1]))
 
 (defn exit! []
   (println)
@@ -12,6 +13,20 @@
   (-> (db.memory/read-value-by-name! "$a0")
       a.number-base/bin->numeric
       print)
+  (flush))
+
+(defn print-float!
+  []
+  (-> (db.coproc1/read-value-by-name! "$f12")
+      a.number-base/bin->float
+      print)
+  (flush))
+
+(defn print-double!
+  []
+  (let [double-string (str (db.coproc1/read-value-by-name! "$f13")
+                           (db.coproc1/read-value-by-name! "$f12"))]
+    (print (a.number-base/bin->double double-string)))
   (flush))
 
 (s/defn ^:private printable-array! []
@@ -48,6 +63,8 @@
   (let [syscall-code (a.number-base/bin->numeric (db.memory/read-value-by-name! "$v0"))]
     (case syscall-code
       1 (print-int!)
+      2 (print-float!)
+      3 (print-double!)
       4 (print-string!)
       5 (read-integer!)
       11 (print-char!)

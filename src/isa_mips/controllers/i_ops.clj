@@ -3,7 +3,8 @@
             [clojure.string :as string]
             [isa-mips.db.memory :as db.memory]
             [isa-mips.logic.binary :as l.binary]
-            [isa-mips.adapters.number-base :as a.number-base]))
+            [isa-mips.adapters.number-base :as a.number-base]
+            [isa-mips.db.coproc1 :as db.coproc1]))
 
 (s/defn ^:private addi!
   [destiny-reg :- s/Str
@@ -117,7 +118,9 @@
    "000101" {:str "bne" :action branch-not-equal!}
    "100011" {:str "lw" :action load-word! :memory-op true}
    "101011" {:str "sw" :action store-word! :memory-op true}
-   "001010" {:str "slti" :action imm-set-less-then!}})
+   "001010" {:str "slti" :action imm-set-less-then!}
+   "110001" {:str "lwc1" :action nil :coproc1 true :memory-op true}
+   "110101" {:str "ldc1" :action nil :coproc1 true :memory-op true}})
 
 (s/defn operation-str! :- s/Str
   [op-code :- s/Str
@@ -126,8 +129,10 @@
    immediate :- s/Str]
   (let [operation        (get i-table (subs op-code 0 6))
         func-name        (:str operation)
-        _assert          (assert (not (nil? func-name)) "Operation not found on i-table")
-        destiny-reg-name (db.memory/read-name! (a.number-base/bin->numeric destiny-reg))
+        _assert          (assert (not (nil? func-name)) (str "Operation not found on i-table: " op-code))
+        num-destiny-reg  (a.number-base/bin->numeric destiny-reg)
+        destiny-reg-name (if (:coproc1 operation) (db.coproc1/read-name! num-destiny-reg)
+                                                  (db.memory/read-name! num-destiny-reg))
         reg-name         (when-not (:load-inst operation) (db.memory/read-name! (a.number-base/bin->numeric reg)))
         unsigned?        (:unsigned operation)
         memory-op?       (:memory-op operation)

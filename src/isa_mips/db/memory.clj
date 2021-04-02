@@ -61,7 +61,7 @@
   [address :- s/Int]
   (get-in (get-by-addr address) [:meta :value]))
 
-(s/defn read-name! :- m.instruction/fourBytesString
+(s/defn read-name!
   [address :- s/Int]
   (get-in (get-by-addr address) [:meta :name]))
 

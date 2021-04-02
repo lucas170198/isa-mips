@@ -3,7 +3,8 @@
             [isa-mips.models.instruction :as m.instruction]
             [isa-mips.controllers.r-ops :as c.r-ops]
             [isa-mips.controllers.i-ops :as c.i-ops]
-            [isa-mips.controllers.j-ops :as c.j-ops]))
+            [isa-mips.controllers.j-ops :as c.j-ops]
+            [isa-mips.controllers.fr-ops :as c.fr-ops]))
 
 (defmulti instruction-string! (fn [instruction] (:format instruction)))
 
@@ -22,6 +23,13 @@
     second-reg :rt
     shamt :shamt} :- m.instruction/RInstruction]
   (c.r-ops/operation-str! func destiny-reg first-reg second-reg shamt))
+
+(s/defmethod instruction-string! :FR
+  [{func :funct
+    fd :fd
+    fs :fs
+    ft :ft}]
+  (c.fr-ops/operation-str! func fd fs ft))
 
 (s/defmethod instruction-string! :I
   [{op-code :op
