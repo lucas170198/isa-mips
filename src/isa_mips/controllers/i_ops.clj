@@ -62,7 +62,7 @@
         branch-addr     (l.binary/signal-extend-32bits (str immediate "00"))
         immediate-value (a.number-base/bin->numeric branch-addr)]
     (when (not= (a.number-base/bin->numeric rt-bin) (a.number-base/bin->numeric rs-bin))
-      (db.memory/sum-program-counter immediate-value))))
+      (db.memory/sum-jump-addr! immediate-value))))
 
 (s/defn ^:private branch-equal!
   [destiny-reg :- s/Str
@@ -73,7 +73,7 @@
         branch-addr     (l.binary/signal-extend-32bits (str immediate "00"))
         immediate-value (a.number-base/bin->numeric branch-addr)]
     (when (= (a.number-base/bin->numeric rt-bin) (a.number-base/bin->numeric rs-bin))
-      (db.memory/sum-program-counter immediate-value))))
+      (db.memory/sum-jump-addr! immediate-value))))
 
 (s/defn ^:private load-word!
   [destiny-reg :- s/Str

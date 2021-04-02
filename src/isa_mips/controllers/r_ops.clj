@@ -33,7 +33,7 @@
 (s/defn ^:private jump-register!
   [_rd :- s/Str rs :- s/Str _rt :- s/Str _shamt :- s/Str]
   (let [target-address             (db.memory/read-value! (a.number-base/bin->numeric rs))]
-    (db.memory/set-program-counter (- (a.number-base/bin->numeric target-address) 4))))
+    (db.memory/set-jump-addr! (a.number-base/bin->numeric target-address))))
 
 (s/defn ^:private shift-left!
   [rd :- s/Str _rs :- s/Str rt :- s/Str shamt :- s/Str]
@@ -57,7 +57,7 @@
         jump-addr             (db.memory/read-value! (a.number-base/bin->numeric rs))
         next-instruction-addr (+ @db.memory/pc 4)]
     (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend next-instruction-addr 32))
-    (db.memory/set-program-counter (- (Integer/parseUnsignedInt jump-addr 2) 4))))
+    (db.memory/set-jump-addr! (- (Integer/parseUnsignedInt jump-addr 2) 4))))
 
 (s/def r-table
   {"100000" {:str "add" :action add!}

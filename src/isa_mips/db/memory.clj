@@ -19,7 +19,11 @@
         {:addr 30 :meta {:name "$fp" :value (a.number-base/binary-string-zero-extend 0 32)}}
         {:addr 31 :meta {:name "$ra" :value (a.number-base/binary-string-zero-extend 0 32)}}))
 
-(s/def  pc (atom pc-init))
+(s/def pc (atom pc-init))
+
+(s/def jump-addr "Store the jump address when a instructions is a jump one. This is for solve the branch delay problem"
+  (atom nil))
+
 
 (def mem
   (->> (concat (list {:addr 0 :meta {:name "$zero" :value (a.number-base/binary-string-zero-extend 0 32)}}
@@ -51,7 +55,7 @@
   "Update a element that matches with the pred"
   [coll value keys pred-fn]
   (mapv #(if (pred-fn %)
-          (assoc-in % keys value) %) coll))
+           (assoc-in % keys value) %) coll))
 
 (s/defn read-value! :- m.instruction/fourBytesString
   [address :- s/Int]
@@ -73,14 +77,22 @@
   [name :- s/Str]
   (get-in (get-by-name name) [:meta :value]))
 
-(s/defn inc-program-counter
+(s/defn inc-program-counter!
   []
   (swap! pc + 4))
 
-(s/defn sum-program-counter
-  [value :- s/Int]
-  (swap! pc + value))
-
-(s/defn set-program-counter
+(s/defn set-program-counter!
   [value :- s/Int]
   (reset! pc value))
+
+(s/defn sum-jump-addr!
+  [value :- s/Int]
+  (reset! jump-addr (+ @pc value)))
+
+(s/defn set-jump-addr!
+  [value :- s/Int]
+  (reset! jump-addr value))
+
+(s/defn clear-jump-addr!
+  []
+  (reset! jump-addr nil))

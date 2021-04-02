@@ -38,13 +38,19 @@
 
 (s/defmethod execute-instruction! :NOP [_])
 
-(defn run-current-instruction! []
-  (-> @db.memory/pc
-      (db.memory/read-value!)
-      (l.instructions/decode-binary-instruction)
-      (execute-instruction!)))
+(defn run-instruction!
+  ([] (run-instruction! @db.memory/pc))
+  ([addr]
+   (-> addr
+       (db.memory/read-value!)
+       (l.instructions/decode-binary-instruction)
+       (execute-instruction!))))
 
 (s/defn run-program! []
   (while true                                               ;Stops in the exit syscall
-    (run-current-instruction!)
-    (db.memory/inc-program-counter)))
+    (run-instruction!)
+    (when-let [jump-addr @db.memory/jump-addr]              ;Verifies if the last instruction was a jump one
+      (run-instruction! (+ 4 @db.memory/pc))                ;run slotted delay instruction
+      (db.memory/set-program-counter! jump-addr)
+      (db.memory/clear-jump-addr!))
+    (db.memory/inc-program-counter!)))
