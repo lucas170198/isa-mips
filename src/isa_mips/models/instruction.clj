@@ -28,7 +28,7 @@
 
 (abstract-map/extend-schema Nop BaseInstruction [:NOP] {})
 
-(abstract-map/extend-schema RInstruction BaseInstruction [:FR] {:fmt   (bitString 5)
+(abstract-map/extend-schema FRInstruction BaseInstruction [:FR] {:fmt   (bitString 5)
                                                                 :ft    (bitString 5)
                                                                 :fs    (bitString 5)
                                                                 :fd    (bitString 5)

@@ -58,6 +58,19 @@
   (let [input-value (Integer/parseInt (read-line))]
     (db.memory/write-value! 2 (a.number-base/binary-string-zero-extend input-value 32))))
 
+(defn read-float!
+  []
+  (let [input-value (Float/parseFloat (read-line))]
+    (db.coproc1/write-value! 0 (a.number-base/float->bin input-value))))
+
+(defn read-double!
+  []
+  (let [input-value (Double/parseDouble (read-line))
+        bin (a.number-base/double->bin input-value)]
+    (db.coproc1/write-value! 1 (subs bin 0 32))
+    (db.coproc1/write-value! 0 (subs bin 32 64))))
+
+
 (s/defn execute!
   []
   (let [syscall-code (a.number-base/bin->numeric (db.memory/read-value-by-name! "$v0"))]
@@ -67,5 +80,7 @@
       3 (print-double!)
       4 (print-string!)
       5 (read-integer!)
+      6 (read-float!)
+      7 (read-double!)
       11 (print-char!)
       10 (exit!))))

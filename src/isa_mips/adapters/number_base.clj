@@ -8,8 +8,19 @@
 
 (s/defn bin->float
   [bin :- s/Str]
-  (-> (Long/parseUnsignedLong bin 2)
+  (-> (new BigInteger bin 2)
+      (.intValue)
       (Float/intBitsToFloat)))
+
+(s/defn float->bin
+  [value :- Float]
+  (-> (Float/floatToIntBits value)
+      (Integer/toBinaryString)))
+
+(s/defn double->bin
+  [value :- Double]
+  (-> (Double/doubleToLongBits value)
+      (Long/toBinaryString)))
 
 (s/defn bin->double
   [bin :- s/Str]

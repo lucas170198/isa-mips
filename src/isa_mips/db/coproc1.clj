@@ -1,7 +1,8 @@
 (ns isa-mips.db.coproc1
   (:require [schema.core :as s]
             [isa-mips.adapters.number-base :as a.number-base]
-            [isa-mips.models.memory :as m.memory]))
+            [isa-mips.models.memory :as m.memory]
+            [isa-mips.models.instruction :as m.instruction]))
 
 ;TODO: Refactor, dont repeat code
 (s/defn ^:private register-class
@@ -26,9 +27,34 @@
       (filterv @mem)
       first))
 
-(defn read-value-by-name! [param1]
-  )
+(defn ^:private get-by-name
+  [name]
+  (-> #(= (get-in % [:meta :name]) name)
+      (filterv @mem)
+      first))
+
+(defn ^:private update-if
+  "Update a element that matches with the pred"
+  [coll value keys pred-fn]
+  (mapv #(if (pred-fn %)
+           (assoc-in % keys value) %) coll))
+
+(s/defn read-value-by-name! :- m.instruction/fourBytesString
+  [name :- s/Str]
+  (get-in (get-by-name name) [:meta :value]))
 
 (s/defn read-name!
   [address :- s/Int]
   (get-in (get-by-addr address) [:meta :name]))
+
+(s/defn write-value! :- (s/maybe m.memory/Store)
+  [address :- s/Int
+   value :- m.instruction/fourBytesString]
+  (when-not (= address 0)
+    (if (nil? (get-by-addr address))
+      (swap! mem conj {:addr address :meta {:value value}})
+      (reset! mem (update-if @mem value [:meta :value] #(= (:addr %) address))))))
+
+(s/defn read-value! :- m.instruction/fourBytesString
+  [address :- s/Int]
+  (get-in (get-by-addr address) [:meta :value]))
