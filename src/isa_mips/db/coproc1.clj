@@ -50,10 +50,9 @@
 (s/defn write-value! :- (s/maybe m.memory/Store)
   [address :- s/Int
    value :- m.instruction/fourBytesString]
-  (when-not (= address 0)
-    (if (nil? (get-by-addr address))
-      (swap! mem conj {:addr address :meta {:value value}})
-      (reset! mem (update-if @mem value [:meta :value] #(= (:addr %) address))))))
+  (if (nil? (get-by-addr address))
+    (swap! mem conj {:addr address :meta {:value value}})
+    (reset! mem (update-if @mem value [:meta :value] #(= (:addr %) address)))))
 
 (s/defn read-value! :- m.instruction/fourBytesString
   [address :- s/Int]

@@ -1,8 +1,10 @@
 (ns isa-mips.db.memory
   (:require [schema.core :as s]
+            [clojure.spec.alpha :as s-a]
             [isa-mips.models.memory :as m.memory]
             [isa-mips.adapters.number-base :as a.number-base]
-            [isa-mips.models.instruction :as m.instruction]))
+            [isa-mips.models.instruction :as m.instruction]
+            [clojure.string :as str]))
 
 (def pc-init 0x00400000)
 
@@ -57,9 +59,17 @@
   (mapv #(if (pred-fn %)
            (assoc-in % keys value) %) coll))
 
-(s/defn read-value! :- m.instruction/fourBytesString
+(s/defn read-reg-value! :- m.instruction/fourBytesString
   [address :- s/Int]
   (get-in (get-by-addr address) [:meta :value]))
+
+(s/defn word-read-value!
+  [initial-address :- s/Int]
+  (-> #(s-a/int-in-range? initial-address (+ initial-address 4) (:addr %))
+      (filterv @mem)
+      (->> (map #(get-in % [:meta :value])))
+      reverse
+      str/join))
 
 (s/defn read-name!
   [address :- s/Int]

@@ -49,8 +49,9 @@
 (defn run-instruction!
   ([] (run-instruction! @db.memory/pc))
   ([addr]
+   #_(println "\nADDR: " (Integer/toHexString addr))
    (-> addr
-       (db.memory/read-value!)
+       (db.memory/read-reg-value!)
        (l.instructions/decode-binary-instruction)
        (execute-instruction!))))
 

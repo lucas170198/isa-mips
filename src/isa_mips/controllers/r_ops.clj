@@ -8,37 +8,37 @@
 (s/defn ^:private add!
   [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
   (let [rd-addr (a.number-base/bin->numeric rd)
-        rs-bin  (db.memory/read-value! (a.number-base/bin->numeric rs))
-        rt-bin  (db.memory/read-value! (a.number-base/bin->numeric rt))
+        rs-bin  (db.memory/read-reg-value! (a.number-base/bin->numeric rs))
+        rt-bin  (db.memory/read-reg-value! (a.number-base/bin->numeric rt))
         result  (l.binary/signed-sum rs-bin rt-bin)]
     (db.memory/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32))))
 
 (s/defn ^:private addu!
   [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
   (let [rd-addr (a.number-base/bin->numeric rd)
-        rs-bin  (db.memory/read-value! (a.number-base/bin->numeric rs))
-        rt-bin  (db.memory/read-value! (a.number-base/bin->numeric rt))
+        rs-bin  (db.memory/read-reg-value! (a.number-base/bin->numeric rs))
+        rt-bin  (db.memory/read-reg-value! (a.number-base/bin->numeric rt))
         result  (l.binary/sum rs-bin rt-bin)]
     (db.memory/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32))))
 
 (s/defn ^:private set-less-than!
   [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
   (let [rd-addr  (a.number-base/bin->numeric rd)
-        rs-bin   (db.memory/read-value! (a.number-base/bin->numeric rs))
-        rt-bin   (db.memory/read-value! (a.number-base/bin->numeric rt))
+        rs-bin   (db.memory/read-reg-value! (a.number-base/bin->numeric rs))
+        rt-bin   (db.memory/read-reg-value! (a.number-base/bin->numeric rt))
         result   (if (< (a.number-base/bin->numeric rs-bin)
                         (a.number-base/bin->numeric rt-bin)) 1 0)]
     (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32))))
 
 (s/defn ^:private jump-register!
   [_rd :- s/Str rs :- s/Str _rt :- s/Str _shamt :- s/Str]
-  (let [target-address             (db.memory/read-value! (a.number-base/bin->numeric rs))]
+  (let [target-address             (db.memory/read-reg-value! (a.number-base/bin->numeric rs))]
     (db.memory/set-jump-addr! (a.number-base/bin->numeric target-address))))
 
 (s/defn ^:private shift-left!
   [rd :- s/Str _rs :- s/Str rt :- s/Str shamt :- s/Str]
   (let [rd-addr     (a.number-base/bin->numeric rd)
-        rt-bin      (db.memory/read-value! (a.number-base/bin->numeric rt))
+        rt-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric rt))
         shamt-value (a.number-base/bin->numeric shamt)
         result      (bit-shift-left (a.number-base/bin->numeric rt-bin) shamt-value)]
     (db.memory/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32))))
@@ -46,7 +46,7 @@
 (s/defn ^:private shift-right!
   [rd :- s/Str _rs :- s/Str rt :- s/Str shamt :- s/Str]
   (let [rd-addr     (a.number-base/bin->numeric rd)
-        rt-bin      (db.memory/read-value! (a.number-base/bin->numeric rt))
+        rt-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric rt))
         shamt-value (a.number-base/bin->numeric shamt)
         result      (bit-shift-right (a.number-base/bin->numeric rt-bin) shamt-value)]
     (db.memory/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32))))
@@ -54,7 +54,7 @@
 (s/defn r-jump-and-link!
   [rd :- s/Str rs :- s/Str _rt :- s/Str _shamt :- s/Str]
   (let [rd-addr               (a.number-base/bin->numeric rd)
-        jump-addr             (db.memory/read-value! (a.number-base/bin->numeric rs))
+        jump-addr             (db.memory/read-reg-value! (a.number-base/bin->numeric rs))
         next-instruction-addr (+ @db.memory/pc 4)]
     (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend next-instruction-addr 32))
     (db.memory/set-jump-addr! (- (Integer/parseUnsignedInt jump-addr 2) 4))))

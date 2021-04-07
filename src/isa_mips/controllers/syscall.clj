@@ -2,7 +2,8 @@
   (:require [schema.core :as s]
             [isa-mips.db.memory :as db.memory]
             [isa-mips.adapters.number-base :as a.number-base]
-            [isa-mips.db.coproc1 :as db.coproc1]))
+            [isa-mips.db.coproc1 :as db.coproc1]
+            [isa-mips.logic.binary :as l.binary]))
 
 (defn exit! []
   (println)
@@ -32,7 +33,7 @@
 (s/defn ^:private printable-array! []
   (loop [addr  (a.number-base/bin->numeric (db.memory/read-value-by-name! "$a0"))
          array '()]
-    (let [character (a.number-base/bin->numeric (db.memory/read-value! addr))]
+    (let [character (a.number-base/bin->numeric (db.memory/read-reg-value! addr))]
       (if (= character 0)
         array
         (recur (inc addr)
@@ -66,7 +67,7 @@
 (defn read-double!
   []
   (let [input-value (Double/parseDouble (read-line))
-        bin (a.number-base/double->bin input-value)]
+        bin (l.binary/zero-extend-nbits (a.number-base/double->bin input-value) 64)]
     (db.coproc1/write-value! 1 (subs bin 0 32))
     (db.coproc1/write-value! 0 (subs bin 32 64))))
 

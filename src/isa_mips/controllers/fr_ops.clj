@@ -3,7 +3,8 @@
             [isa-mips.db.coproc1 :as db.coproc1]
             [isa-mips.adapters.number-base :as a.number-base]
             [isa-mips.db.memory :as db.memory]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [isa-mips.logic.binary :as l.binary]))
 
 
 
@@ -12,8 +13,11 @@
    reg :- s/Str
    _]
   (let [destiny-addr (a.number-base/bin->numeric destiny-reg)
-        reg-value (db.coproc1/read-value! (a.number-base/bin->numeric reg))]
-    (db.coproc1/write-value! destiny-addr reg-value)))
+        reg-num   (a.number-base/bin->numeric reg)
+        reg-value (db.coproc1/read-value! reg-num)
+        hi-value  (db.coproc1/read-value! (+ reg-num 1))]
+    (db.coproc1/write-value! destiny-addr reg-value)
+    (db.coproc1/write-value! (+ destiny-addr 1) hi-value)))
 
 (s/defn ^:private move-float-to-reg!
   [_ :- s/Str

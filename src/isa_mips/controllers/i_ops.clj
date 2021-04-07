@@ -11,7 +11,7 @@
    reg :- s/Str
    immediate :- s/Str]
   (let [destiny-reg      (a.number-base/bin->numeric destiny-reg)
-        reg-bin          (db.memory/read-value! (a.number-base/bin->numeric reg))
+        reg-bin          (db.memory/read-reg-value! (a.number-base/bin->numeric reg))
         immediate-signal (l.binary/signal-extend-32bits immediate)
         result           (l.binary/signed-sum reg-bin immediate-signal)]
     (db.memory/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32))))
@@ -21,7 +21,7 @@
    reg :- s/Str
    immediate :- s/Str]
   (let [destiny-reg      (a.number-base/bin->numeric destiny-reg)
-        reg-bin          (db.memory/read-value! (a.number-base/bin->numeric reg))
+        reg-bin          (db.memory/read-reg-value! (a.number-base/bin->numeric reg))
         immediate-signal (l.binary/signal-extend-32bits immediate)
         result           (l.binary/sum reg-bin immediate-signal)]
     (db.memory/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32))))
@@ -32,7 +32,7 @@
    immediate :- s/Str]
   (let [destiny-reg     (a.number-base/bin->numeric destiny-reg)
         immediate-value (a.number-base/bin->numeric (l.binary/zero-extend-32bits immediate))
-        reg-bin         (db.memory/read-value! (a.number-base/bin->numeric reg))
+        reg-bin         (db.memory/read-reg-value! (a.number-base/bin->numeric reg))
         result          (bit-or immediate-value (a.number-base/bin->numeric reg-bin))]
     (db.memory/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32))))
 
@@ -42,7 +42,7 @@
    immediate :- s/Str]
   (let [destiny-reg     (a.number-base/bin->numeric destiny-reg)
         immediate-value (a.number-base/bin->numeric (l.binary/zero-extend-32bits immediate))
-        reg-bin         (db.memory/read-value! (a.number-base/bin->numeric reg))
+        reg-bin         (db.memory/read-reg-value! (a.number-base/bin->numeric reg))
         result          (bit-and immediate-value (a.number-base/bin->numeric reg-bin))]
     (db.memory/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32))))
 
@@ -58,8 +58,8 @@
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  (let [rt-bin          (db.memory/read-value! (a.number-base/bin->numeric destiny-reg))
-        rs-bin          (db.memory/read-value! (a.number-base/bin->numeric reg))
+  (let [rt-bin          (db.memory/read-reg-value! (a.number-base/bin->numeric destiny-reg))
+        rs-bin          (db.memory/read-reg-value! (a.number-base/bin->numeric reg))
         branch-addr     (l.binary/signal-extend-32bits (str immediate "00"))
         immediate-value (a.number-base/bin->numeric branch-addr)]
     (when (not= (a.number-base/bin->numeric rt-bin) (a.number-base/bin->numeric rs-bin))
@@ -69,8 +69,8 @@
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  (let [rt-bin          (db.memory/read-value! (a.number-base/bin->numeric destiny-reg))
-        rs-bin          (db.memory/read-value! (a.number-base/bin->numeric reg))
+  (let [rt-bin          (db.memory/read-reg-value! (a.number-base/bin->numeric destiny-reg))
+        rs-bin          (db.memory/read-reg-value! (a.number-base/bin->numeric reg))
         branch-addr     (l.binary/signal-extend-32bits (str immediate "00"))
         immediate-value (a.number-base/bin->numeric branch-addr)]
     (when (= (a.number-base/bin->numeric rt-bin) (a.number-base/bin->numeric rs-bin))
@@ -82,18 +82,18 @@
    immediate :- s/Str]
   (let [destiny-addr (a.number-base/bin->numeric destiny-reg)
         offset       (l.binary/signal-extend-32bits immediate)
-        reg-bin      (db.memory/read-value! (a.number-base/bin->numeric reg))
+        reg-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric reg))
         target-addr  (l.binary/sum reg-bin offset)
-        memory-value (db.memory/read-value! target-addr)]
+        memory-value (db.memory/word-read-value! target-addr)]
     (db.memory/write-value! destiny-addr memory-value)))
 
 (s/defn ^:private store-word!
   [destiny-reg :- s/Str
    reg :- s/Str
    immediate :- s/Str]
-  (let [destiny-value (db.memory/read-value! (a.number-base/bin->numeric destiny-reg))
+  (let [destiny-value (db.memory/read-reg-value! (a.number-base/bin->numeric destiny-reg))
         offset        (l.binary/signal-extend-32bits immediate)
-        reg-bin       (db.memory/read-value! (a.number-base/bin->numeric reg))
+        reg-bin       (db.memory/read-reg-value! (a.number-base/bin->numeric reg))
         target-addr   (l.binary/sum reg-bin offset)]
     (db.memory/write-value! target-addr destiny-value)))
 
@@ -102,7 +102,7 @@
    reg :- s/Str
    immediate :- s/Str]
   (let [immediate-value (a.number-base/bin->numeric (l.binary/signal-extend-32bits immediate))
-        reg-bin         (db.memory/read-value! (a.number-base/bin->numeric reg))
+        reg-bin         (db.memory/read-reg-value! (a.number-base/bin->numeric reg))
         destiny-reg     (a.number-base/bin->numeric destiny-reg)
         result          (if (< (a.number-base/bin->numeric reg-bin)
                                immediate-value) 1 0)]
@@ -114,9 +114,9 @@
    immediate :- s/Str]
   (let [destiny-addr (a.number-base/bin->numeric destiny-reg)
         offset       (l.binary/signal-extend-32bits immediate)
-        reg-bin      (db.memory/read-value! (a.number-base/bin->numeric reg))
+        reg-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric reg))
         target-addr  (l.binary/sum reg-bin offset)
-        memory-value (db.memory/read-value! target-addr)]
+        memory-value (db.memory/word-read-value! target-addr)]
     (db.coproc1/write-value! destiny-addr memory-value)))
 
 (s/defn ^:private load-word-double!
@@ -126,10 +126,10 @@
   (let [lo-destiny-addr (a.number-base/bin->numeric destiny-reg)
         hi-destiny-addr (+ lo-destiny-addr 1)
         offset          (l.binary/signal-extend-32bits immediate)
-        reg-bin         (db.memory/read-value! (a.number-base/bin->numeric reg))
+        reg-bin         (db.memory/read-reg-value! (a.number-base/bin->numeric reg))
         lo-addr         (l.binary/sum reg-bin offset)
-        lo-memory-value (db.memory/read-value! lo-addr)
-        hi-memory-value (db.memory/read-value! (+ lo-addr 4))]
+        lo-memory-value (db.memory/word-read-value! lo-addr)
+        hi-memory-value (db.memory/word-read-value! (+ lo-addr 4))]
     (db.coproc1/write-value! lo-destiny-addr lo-memory-value)
     (db.coproc1/write-value! hi-destiny-addr hi-memory-value)))
 
