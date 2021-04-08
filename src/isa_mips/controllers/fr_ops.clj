@@ -21,17 +21,26 @@
 (s/defn ^:private move-float-to-reg!
   [_ :- s/Str
    reg :- s/Str
-   regular-reg]
+   regular-reg :- s/Str]
   (let [destiny-addr (a.number-base/bin->numeric regular-reg)
         reg-value    (db.coproc1/read-value! (a.number-base/bin->numeric reg))]
     (db.memory/write-value! destiny-addr reg-value)))
+
+(s/defn ^:private move-word-to-float!
+  [_ :- s/Str
+   reg :- s/Str
+   regular-reg :- s/Str]
+  (let [read-addr    (a.number-base/bin->numeric regular-reg)
+        destiny-addr (a.number-base/bin->numeric reg)
+        reg-value    (db.memory/read-reg-value! (a.number-base/bin->numeric read-addr))]
+    (db.coproc1/write-value! destiny-addr reg-value)))
 
 (s/def fr-table-by-func
   {"000110" {:str "mov.d" :action floating-point-move!}})
 
 (s/def fr-table-by-fmt
   {"00000" {:str "mfc1" :action move-float-to-reg! :regular-reg true}
-   "00100" {:str "mtc1" :action nil}})
+   "00100" {:str "mtc1" :action move-word-to-float! :regular-reg true}})
 
 
 (s/defn ^:private operation
