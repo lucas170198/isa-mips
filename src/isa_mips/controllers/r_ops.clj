@@ -23,16 +23,16 @@
 
 (s/defn ^:private set-less-than!
   [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
-  (let [rd-addr  (a.number-base/bin->numeric rd)
-        rs-bin   (db.memory/read-reg-value! (a.number-base/bin->numeric rs))
-        rt-bin   (db.memory/read-reg-value! (a.number-base/bin->numeric rt))
-        result   (if (< (a.number-base/bin->numeric rs-bin)
-                        (a.number-base/bin->numeric rt-bin)) 1 0)]
+  (let [rd-addr (a.number-base/bin->numeric rd)
+        rs-bin  (db.memory/read-reg-value! (a.number-base/bin->numeric rs))
+        rt-bin  (db.memory/read-reg-value! (a.number-base/bin->numeric rt))
+        result  (if (< (a.number-base/bin->numeric rs-bin)
+                       (a.number-base/bin->numeric rt-bin)) 1 0)]
     (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32))))
 
 (s/defn ^:private jump-register!
   [_rd :- s/Str rs :- s/Str _rt :- s/Str _shamt :- s/Str]
-  (let [target-address             (db.memory/read-reg-value! (a.number-base/bin->numeric rs))]
+  (let [target-address (db.memory/read-reg-value! (a.number-base/bin->numeric rs))]
     (db.memory/set-jump-addr! (a.number-base/bin->numeric target-address))))
 
 (s/defn ^:private shift-left!
@@ -66,7 +66,13 @@
    "001000" {:str "jr" :action jump-register! :hide-destiny-reg true :hide-second-reg true}
    "000000" {:str "sll" :action shift-left! :shamt true}
    "000010" {:str "srl" :action shift-right! :shamt true}
-   "001001" {:str "jalr" :action r-jump-and-link! :hide-second-reg true}})
+   "001001" {:str "jalr" :action r-jump-and-link! :hide-second-reg true}
+   "011000" {:str "mult" :action nil}
+   "010010" {:str "mflo" :action nil}
+   "010000" {:str "mfhi" :action nil}
+   "011010" {:str "div" :action nil}
+   "100101" {:str "or" :action nil}
+   "001101" {:str "break" :action nil}})
 
 (s/defn operation-str! :- s/Str
   [func :- s/Str
@@ -74,15 +80,15 @@
    first-reg :- s/Str
    second-reg :- s/Str
    shamt :- s/Str]
-  (let [operation         (get r-table func)
-        func-name         (:str operation)
-        _assert           (assert (not (nil? operation)) (str "Operation not found on r-table\n func: " func))
-        shamt?            (:shamt operation)
-        destiny-reg-name  (when-not (:hide-destiny-reg operation) (db.memory/read-name! (a.number-base/bin->numeric destiny-reg)))
-        first-reg-name    (when-not shamt? (db.memory/read-name! (a.number-base/bin->numeric first-reg)))
-        shamt             (when shamt? (a.number-base/bin->numeric shamt))
-        second-name       (when-not (:hide-second-reg operation)
-                            (db.memory/read-name! (a.number-base/bin->numeric second-reg)))]
+  (let [operation        (get r-table func)
+        func-name        (:str operation)
+        _assert          (assert (not (nil? operation)) (str "Operation not found on r-table\n func: " func))
+        shamt?           (:shamt operation)
+        destiny-reg-name (when-not (:hide-destiny-reg operation) (db.memory/read-name! (a.number-base/bin->numeric destiny-reg)))
+        first-reg-name   (when-not shamt? (db.memory/read-name! (a.number-base/bin->numeric first-reg)))
+        shamt            (when shamt? (a.number-base/bin->numeric shamt))
+        second-name      (when-not (:hide-second-reg operation)
+                           (db.memory/read-name! (a.number-base/bin->numeric second-reg)))]
     (str func-name " " (string/join ", " (remove nil? [destiny-reg-name first-reg-name second-name shamt])))))
 
 (s/defn execute!

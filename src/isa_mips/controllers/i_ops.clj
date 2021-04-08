@@ -145,7 +145,8 @@
    "101011" {:str "sw" :action store-word! :memory-op true}
    "001010" {:str "slti" :action imm-set-less-then!}
    "110001" {:str "lwc1" :action load-word-float! :coproc1 true :memory-op true}
-   "110101" {:str "ldc1" :action load-word-double! :coproc1 true :memory-op true}})
+   "110101" {:str "ldc1" :action load-word-double! :coproc1 true :memory-op true}
+   "100000" {:str "lb" :action nil}})
 
 (s/defn operation-str! :- s/Str
   [op-code :- s/Str

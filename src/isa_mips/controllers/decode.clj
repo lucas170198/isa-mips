@@ -28,8 +28,9 @@
   [{func :funct
     fd :fd
     fs :fs
-    ft :ft} :- m.instruction/FRInstruction]
-  (c.fr-ops/operation-str! func fd fs ft))
+    ft :ft
+    fmt :fmt} :- m.instruction/FRInstruction]
+  (c.fr-ops/operation-str! func fmt fd fs ft))
 
 (s/defmethod instruction-string! :I
   [{op-code :op

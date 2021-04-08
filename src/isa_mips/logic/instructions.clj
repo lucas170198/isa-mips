@@ -51,9 +51,6 @@
     (= (subs binary-string 0 6) "010001")
     (FR-format-instruction binary-string)
 
-    (= (subs binary-string 0 3) "010")
-    (R-format-instruction binary-string)
-
     (= (subs binary-string 0 3) "001")
     (I-format-instruction binary-string)
 

@@ -3,8 +3,7 @@
             [isa-mips.db.coproc1 :as db.coproc1]
             [isa-mips.adapters.number-base :as a.number-base]
             [isa-mips.db.memory :as db.memory]
-            [clojure.string :as string]
-            [isa-mips.logic.binary :as l.binary]))
+            [clojure.string :as string]))
 
 
 
@@ -27,16 +26,27 @@
         reg-value (db.coproc1/read-value! (a.number-base/bin->numeric reg))]
     (db.memory/write-value! destiny-addr reg-value)))
 
-(s/def fr-table
-  {"000000" {:str "mfc1" :action move-float-to-reg! :regular-reg true}
-   "000110" {:str "mov.d" :action floating-point-move!}})
+(s/def fr-table-by-func
+  {"000110" {:str "mov.d" :action floating-point-move!}})
+
+(s/def fr-table-by-fmt
+  {"00000" {:str "mfc1" :action move-float-to-reg! :regular-reg true}
+   "00100" {:str "mtc1" :action nil}})
+
+
+(s/defn ^:private operation
+  [func :- s/Str
+   fmt :- s/Str]
+  (or (get fr-table-by-fmt fmt)
+      (get fr-table-by-func func)))
 
 (s/defn operation-str! :- s/Str
   [func :- s/Str
+   fmt :- s/Str
    fd :- s/Str
    fs :- s/Str
    ft :- s/Str]
-  (let [operation    (get fr-table func)
+  (let [operation    (operation func fmt)
         func-name    (:str operation)
         regular-reg? (:regular-reg operation)
         fd-name      (when-not regular-reg?
@@ -47,8 +57,8 @@
     (str func-name " " (string/join ", " (remove nil? [rt-name fd-name fs-name])))))
 
 (s/defn execute!
-  [func fd fs ft]
-  (let [func-fn (get-in fr-table [func :action])]
+  [func fmt fd fs ft]
+  (let [func-fn (:action (operation func fmt))]
     (func-fn fd fs ft)))
 
 

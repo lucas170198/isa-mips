@@ -43,13 +43,13 @@
   [{func :funct
     fd :fd
     fs :fs
-    ft :ft} :- m.instruction/FRInstruction]
-  (c.fr-ops/execute! func fd fs ft))
+    ft :ft
+    fmt :fmt} :- m.instruction/FRInstruction]
+  (c.fr-ops/execute! func fmt fd fs ft))
 
 (defn run-instruction!
   ([] (run-instruction! @db.memory/pc))
   ([addr]
-   #_(println "\nADDR: " (Integer/toHexString addr))
    (-> addr
        (db.memory/read-reg-value!)
        (l.instructions/decode-binary-instruction)
