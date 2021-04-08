@@ -20,6 +20,14 @@
 
 (def lo (atom (a.number-base/binary-string-zero-extend 0)))
 
+(s/defn set-hi!
+  [hi-value :- s/Str]
+  (reset! hi hi-value))
+
+(s/defn set-lo!
+  [lo-value :- s/Str]
+  (reset! lo lo-value))
+
 ;TODO: Refactor, dont repeat code
 (defn ^:private get-by-addr
   [address]

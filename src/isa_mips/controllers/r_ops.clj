@@ -3,7 +3,8 @@
             [clojure.string :as string]
             [isa-mips.db.memory :as db.memory]
             [isa-mips.logic.binary :as l.binary]
-            [isa-mips.adapters.number-base :as a.number-base]))
+            [isa-mips.adapters.number-base :as a.number-base]
+            [isa-mips.db.coproc1 :as db.coproc1]))
 
 (s/defn ^:private add!
   [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
@@ -51,13 +52,54 @@
         result      (bit-shift-right (a.number-base/bin->numeric rt-bin) shamt-value)]
     (db.memory/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32))))
 
-(s/defn r-jump-and-link!
+(s/defn ^:private r-jump-and-link!
   [rd :- s/Str rs :- s/Str _rt :- s/Str _shamt :- s/Str]
   (let [rd-addr               (a.number-base/bin->numeric rd)
         jump-addr             (db.memory/read-reg-value! (a.number-base/bin->numeric rs))
         next-instruction-addr (+ @db.memory/pc 4)]
     (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend next-instruction-addr 32))
     (db.memory/set-jump-addr! (- (Integer/parseUnsignedInt jump-addr 2) 4))))
+
+(s/defn ^:private or!
+  [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
+  (let [destiny-reg (a.number-base/bin->numeric rd)
+        rs-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric rs))
+        rt-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric rt))
+        result      (bit-or (a.number-base/bin->numeric rs-bin) (a.number-base/bin->numeric rt-bin))]
+    (db.memory/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32))))
+
+(s/defn ^:private div!
+  [_rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
+  (let [rs-bin     (db.memory/read-reg-value! (a.number-base/bin->numeric rs))
+        rt-bin     (db.memory/read-reg-value! (a.number-base/bin->numeric rt))
+        rs-value   (a.number-base/bin->numeric rs-bin)
+        rt-value   (a.number-base/bin->numeric rt-bin)
+        div-result (/ rs-value rt-value)
+        rem        (rem rs-value rt-value)]
+    (db.coproc1/set-lo! (a.number-base/binary-string-signal-extend div-result 32))
+    (db.coproc1/set-hi! (a.number-base/binary-string-signal-extend rem 32))))
+
+(s/defn ^:private mfhi!
+  [rd :- s/Str _rs :- s/Str _rt :- s/Str _shamt :- s/Str]
+  (let [rd-addr (a.number-base/bin->numeric rd)]
+    (db.memory/write-value! rd-addr @db.coproc1/hi)))
+
+(s/defn ^:private mflo!
+  [rd :- s/Str _rs :- s/Str _rt :- s/Str _shamt :- s/Str]
+  (let [rd-addr (a.number-base/bin->numeric rd)]
+    (db.memory/write-value! rd-addr @db.coproc1/lo)))
+
+(s/defn ^:private mult!
+  [_rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
+  (let [rs-bin     (db.memory/read-reg-value! (a.number-base/bin->numeric rs))
+        rt-bin     (db.memory/read-reg-value! (a.number-base/bin->numeric rt))
+        rs-value   (a.number-base/bin->numeric rs-bin)
+        rt-value   (a.number-base/bin->numeric rt-bin)
+        result     (* rs-value rt-value)
+        result-bin (a.number-base/binary-string-signal-extend result 64)]
+    #_(println "RESULT: " result)
+    (db.coproc1/set-hi! (subs result-bin 0 32))
+    (db.coproc1/set-lo! (subs result-bin 32 64))))
 
 (s/def r-table
   {"100000" {:str "add" :action add!}
@@ -67,12 +109,12 @@
    "000000" {:str "sll" :action shift-left! :shamt true}
    "000010" {:str "srl" :action shift-right! :shamt true}
    "001001" {:str "jalr" :action r-jump-and-link! :hide-second-reg true}
-   "011000" {:str "mult" :action nil}
-   "010010" {:str "mflo" :action nil}
-   "010000" {:str "mfhi" :action nil}
-   "011010" {:str "div" :action nil}
-   "100101" {:str "or" :action nil}
-   "001101" {:str "break" :action nil}})
+   "011000" {:str "mult" :action mult!}
+   "010010" {:str "mflo" :action mflo!}
+   "010000" {:str "mfhi" :action mfhi!}
+   "011010" {:str "div" :action div!}
+   "100101" {:str "or" :action or!}
+   "001101" {:str "break" :action (constantly nil)}})
 
 (s/defn operation-str! :- s/Str
   [func :- s/Str

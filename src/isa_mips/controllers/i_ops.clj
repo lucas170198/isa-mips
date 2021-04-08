@@ -133,6 +133,17 @@
     (db.coproc1/write-value! lo-destiny-addr lo-memory-value)
     (db.coproc1/write-value! hi-destiny-addr hi-memory-value)))
 
+(s/defn ^:private load-byte!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   immediate :- s/Str]
+  (let [destiny-addr  (a.number-base/bin->numeric destiny-reg)
+        offset        (l.binary/signal-extend-32bits immediate)
+        reg-bin       (db.memory/read-reg-value! (a.number-base/bin->numeric reg))
+        target-addr   (l.binary/sum reg-bin offset)
+        destiny-value (db.memory/word-read-value! target-addr)]
+    (db.memory/write-value! destiny-addr destiny-value)))
+
 (s/def i-table
   {"001000" {:str "addi" :action addi!}
    "001001" {:str "addiu" :action addiu! :unsigned true}
@@ -146,7 +157,7 @@
    "001010" {:str "slti" :action imm-set-less-then!}
    "110001" {:str "lwc1" :action load-word-float! :coproc1 true :memory-op true}
    "110101" {:str "ldc1" :action load-word-double! :coproc1 true :memory-op true}
-   "100000" {:str "lb" :action nil}})
+   "100000" {:str "lb" :action load-byte! :memory-op true}})
 
 (s/defn operation-str! :- s/Str
   [op-code :- s/Str
