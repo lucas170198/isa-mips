@@ -97,7 +97,6 @@
         rt-value   (a.number-base/bin->numeric rt-bin)
         result     (* rs-value rt-value)
         result-bin (a.number-base/binary-string-signal-extend result 64)]
-    #_(println "RESULT: " result)
     (db.coproc1/set-hi! (subs result-bin 0 32))
     (db.coproc1/set-lo! (subs result-bin 32 64))))
 
@@ -109,10 +108,10 @@
    "000000" {:str "sll" :action shift-left! :shamt true}
    "000010" {:str "srl" :action shift-right! :shamt true}
    "001001" {:str "jalr" :action r-jump-and-link! :hide-second-reg true}
-   "011000" {:str "mult" :action mult!}
-   "010010" {:str "mflo" :action mflo!}
-   "010000" {:str "mfhi" :action mfhi!}
-   "011010" {:str "div" :action div!}
+   "011000" {:str "mult" :action mult! :hide-destiny-reg true}
+   "010010" {:str "mflo" :action mflo! :hide-second-reg true :hide-first-reg true}
+   "010000" {:str "mfhi" :action mfhi! :hide-second-reg true :hide-first-reg true}
+   "011010" {:str "div" :action div! :hide-destiny-reg true}
    "100101" {:str "or" :action or!}
    "001101" {:str "break" :action (constantly nil)}})
 
@@ -127,7 +126,8 @@
         _assert          (assert (not (nil? operation)) (str "Operation not found on r-table\n func: " func))
         shamt?           (:shamt operation)
         destiny-reg-name (when-not (:hide-destiny-reg operation) (db.memory/read-name! (a.number-base/bin->numeric destiny-reg)))
-        first-reg-name   (when-not shamt? (db.memory/read-name! (a.number-base/bin->numeric first-reg)))
+        first-reg-name   (when-not (or shamt? (:hide-first-reg operation))
+                           (db.memory/read-name! (a.number-base/bin->numeric first-reg)))
         shamt            (when shamt? (a.number-base/bin->numeric shamt))
         second-name      (when-not (:hide-second-reg operation)
                            (db.memory/read-name! (a.number-base/bin->numeric second-reg)))]
