@@ -3,9 +3,16 @@
             [isa-mips.db.coproc1 :as db.coproc1]
             [isa-mips.adapters.number-base :as a.number-base]
             [isa-mips.db.memory :as db.memory]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [clojure.string :as str]))
 
-
+(s/defn ^:private format-extension
+  [fmt]
+  (let [fmt-value (a.number-base/bin->numeric fmt)]
+    (cond
+      (= fmt-value 17) :d
+      (>= fmt-value 16) :s
+      :else (throw (ex-info "Invalid format" {:format fmt})))))
 
 (s/defn ^:private floating-point-move!
   [destiny-reg :- s/Str
@@ -35,19 +42,29 @@
         reg-value    (db.memory/read-reg-value! (a.number-base/bin->numeric read-addr))]
     (db.coproc1/write-value! destiny-addr reg-value)))
 
-(s/def fr-table-by-func
-  {"000110" {:str "mov.d" :action floating-point-move!}})
+(s/def ^:private fr-table-by-func
+  {"000110" {:str "mov" :action floating-point-move!}
+   "100001" {:str "cvt.d" :action nil}
+   "000000" {:str "add"  :action nil}
+   "000011" {:str "div" :action nil}
+   "100000" {:str "cvt.s" :action nil}
+   "000010" {:str "mul" :action nil}})
 
-(s/def fr-table-by-fmt
+(s/def ^:private fr-table-by-fmt
   {"00000" {:str "mfc1" :action move-float-to-reg! :regular-reg true}
    "00100" {:str "mtc1" :action move-word-to-float! :regular-reg true}})
 
+(s/defn ^:private with-formatted-name
+  [func :- s/Str
+   fmt :- s/Str]
+  (when-let [operation (get fr-table-by-func func)]
+    (update operation :str #(->> (format-extension fmt) name (str % ".")))))
 
 (s/defn ^:private operation
   [func :- s/Str
    fmt :- s/Str]
   (or (get fr-table-by-fmt fmt)
-      (get fr-table-by-func func)))
+      (with-formatted-name func fmt)))
 
 (s/defn operation-str! :- s/Str
   [func :- s/Str
@@ -57,6 +74,7 @@
    ft :- s/Str]
   (let [operation    (operation func fmt)
         func-name    (:str operation)
+        _assert      (assert (not (nil? func-name)) (str "Operation not found on fr-table\n func: " func " fmt :" fmt))
         regular-reg? (:regular-reg operation)
         fd-name      (when-not regular-reg?
                        (db.coproc1/read-name! (a.number-base/bin->numeric fd)))
