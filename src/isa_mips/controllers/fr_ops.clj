@@ -3,8 +3,7 @@
             [isa-mips.db.coproc1 :as db.coproc1]
             [isa-mips.adapters.number-base :as a.number-base]
             [isa-mips.db.memory :as db.memory]
-            [clojure.string :as string]
-            [clojure.string :as str]))
+            [clojure.string :as string]))
 
 (s/defn ^:private format-extension
   [fmt]
@@ -14,7 +13,7 @@
       (>= fmt-value 16) :s
       :else (throw (ex-info "Invalid format" {:format fmt})))))
 
-(s/defn ^:private floating-point-move!
+(s/defn ^:private double-move!
   [destiny-reg :- s/Str
    reg :- s/Str
    _]
@@ -25,10 +24,20 @@
     (db.coproc1/write-value! destiny-addr reg-value)
     (db.coproc1/write-value! (+ destiny-addr 1) hi-value)))
 
+(s/defn ^:private floating-point-move!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   _]
+  (let [destiny-addr (a.number-base/bin->numeric destiny-reg)
+        reg-num      (a.number-base/bin->numeric reg)
+        reg-value    (db.coproc1/read-value! reg-num)]
+    (db.coproc1/write-value! destiny-addr reg-value)))
+
 (s/defn ^:private move-float-to-reg!
   [_ :- s/Str
    reg :- s/Str
-   regular-reg :- s/Str]
+   regular-reg :- s/Str
+   _]
   (let [destiny-addr (a.number-base/bin->numeric regular-reg)
         reg-value    (db.coproc1/read-value! (a.number-base/bin->numeric reg))]
     (db.memory/write-value! destiny-addr reg-value)))
@@ -36,19 +45,38 @@
 (s/defn ^:private move-word-to-float!
   [_ :- s/Str
    reg :- s/Str
-   regular-reg :- s/Str]
+   regular-reg :- s/Str
+   _]
   (let [read-addr    (a.number-base/bin->numeric regular-reg)
         destiny-addr (a.number-base/bin->numeric reg)
-        reg-value    (db.memory/read-reg-value! (a.number-base/bin->numeric read-addr))]
+        reg-value    (db.memory/read-reg-value! read-addr)]
     (db.coproc1/write-value! destiny-addr reg-value)))
 
+(s/defn ^:private mov!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   regular-reg :- s/Str
+   fmt :- s/Str]
+  (condp = (format-extension fmt)
+    :s (floating-point-move! destiny-reg reg regular-reg)
+    :d (double-move! destiny-reg regular-reg regular-reg)))
+
+(s/defn ^:private cvt.d
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   regular-reg :- s/Str
+   fmt :- s/Str]
+  (condp = (format-extension fmt)
+    :s
+    :d (throw)))
+
 (s/def ^:private fr-table-by-func
-  {"000110" {:str "mov" :action floating-point-move!}
-   "100001" {:str "cvt.d" :action nil}
-   "000000" {:str "add"  :action nil}
-   "000011" {:str "div" :action nil}
-   "100000" {:str "cvt.s" :action nil}
-   "000010" {:str "mul" :action nil}})
+  {"000110" {:str "mov" :action mov!}
+   "100001" {:str "cvt.d" :action (constantly nil)}
+   "000000" {:str "add"  :action (constantly nil)}
+   "000011" {:str "div" :action (constantly nil)}
+   "100000" {:str "cvt.s" :action (constantly nil)}
+   "000010" {:str "mul" :action (constantly nil)}})
 
 (s/def ^:private fr-table-by-fmt
   {"00000" {:str "mfc1" :action move-float-to-reg! :regular-reg true}
@@ -86,6 +114,6 @@
 (s/defn execute!
   [func fmt fd fs ft]
   (let [func-fn (:action (operation func fmt))]
-    (func-fn fd fs ft)))
+    (func-fn fd fs ft fmt)))
 
 

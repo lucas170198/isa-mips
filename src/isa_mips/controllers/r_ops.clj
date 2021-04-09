@@ -68,6 +68,14 @@
         result      (bit-or (a.number-base/bin->numeric rs-bin) (a.number-base/bin->numeric rt-bin))]
     (db.memory/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32))))
 
+(s/defn ^:private xor!
+  [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
+  (let [destiny-reg (a.number-base/bin->numeric rd)
+        rs-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric rs))
+        rt-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric rt))
+        result      (bit-xor (a.number-base/bin->numeric rs-bin) (a.number-base/bin->numeric rt-bin))]
+    (db.memory/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32))))
+
 (s/defn ^:private div!
   [_rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
   (let [rs-bin     (db.memory/read-reg-value! (a.number-base/bin->numeric rs))
@@ -114,7 +122,7 @@
    "011010" {:str "div" :action div! :hide-destiny-reg true}
    "100101" {:str "or" :action or!}
    "001101" {:str "break" :action (constantly nil) :hide-destiny-reg true :hide-second-reg true :hide-first-reg true}
-   "100110" {:str "xor" :action nil}})
+   "100110" {:str "xor" :action xor!}})
 
 (s/defn operation-str! :- s/Str
   [func :- s/Str
