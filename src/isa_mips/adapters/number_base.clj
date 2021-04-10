@@ -28,6 +28,10 @@
       (.longValue)
       (Double/longBitsToDouble)))
 
+(s/defn double->float
+  [value]
+  (.floatValue value))
+
 (defn binary-string-zero-extend
   "Returns a binary representation of a byte value.
   reference: https://gist.github.com/benzap/7cda95aeaeecac12b5763a72ddb89310 "
