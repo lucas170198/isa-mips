@@ -4,7 +4,7 @@
             [isa-mips.models.memory :as m.memory]
             [isa-mips.models.instruction :as m.instruction]))
 
-;TODO: Refactor, dont repeat code
+;TODO: Refactor, dont repeat code. (code very similar to the regular memory). Maybe a record can be use instead
 (s/defn ^:private register-class
         [prefix init-idx vector]
         (map-indexed (fn [idx _]
@@ -28,7 +28,6 @@
   [lo-value :- s/Str]
   (reset! lo lo-value))
 
-;TODO: Refactor, dont repeat code
 (defn ^:private get-by-addr
   [address]
   (-> #(= (:addr %) address)
