@@ -122,7 +122,9 @@
    "011010" {:str "div" :action div! :hide-destiny-reg true}
    "100101" {:str "or" :action or!}
    "001101" {:str "break" :action (constantly nil) :hide-destiny-reg true :hide-second-reg true :hide-first-reg true}
-   "100110" {:str "xor" :action xor!}})
+   "100110" {:str "xor" :action xor!}
+   "100100" {:str "and" :action (constantly nil)}
+   "101011" {:str "sltu" :action (constantly nil)}})
 
 (s/defn operation-str! :- s/Str
   [func :- s/Str

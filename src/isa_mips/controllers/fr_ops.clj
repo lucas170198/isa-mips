@@ -250,5 +250,3 @@
   [func fmt fd fs ft]
   (let [func-fn (:action (operation func fmt))]
     (func-fn fd fs ft fmt)))
-
-

@@ -54,6 +54,7 @@
     (= (subs binary-string 0 3) "001")
     (I-format-instruction binary-string)
 
+
     (= (subs binary-string 0 3) "100")
     (I-format-instruction binary-string)
 
@@ -63,7 +64,7 @@
     (= (subs binary-string 0 3) "110")
     (I-format-instruction binary-string)
 
-    (= (subs binary-string 0 5) "00010")
+    (= (subs binary-string 0 4) "0001")
     (I-format-instruction binary-string)
 
     (= (subs binary-string 0 5) "00001")
