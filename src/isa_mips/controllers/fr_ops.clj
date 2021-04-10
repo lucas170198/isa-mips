@@ -69,7 +69,7 @@
   (let [destiny-addr (a.number-base/bin->numeric destiny-reg)
         reg-bin      (db.coproc1/read-value! (a.number-base/bin->numeric reg))
         result       (double (a.number-base/bin->numeric reg-bin))
-        result-bin   (l.binary/signal-extend-nbits (a.number-base/double->bin result) 64)]
+        result-bin   (l.binary/zero-extend-nbits (a.number-base/double->bin result) 64)]
     (db.coproc1/write-value! (+ destiny-addr 1) (subs result-bin 0 32))
     (db.coproc1/write-value! destiny-addr (subs result-bin 32 64))))
 
@@ -80,15 +80,138 @@
    fmt :- s/Str]
   (condp = (format-extension fmt)
     :w (convert-integer-to-double! destiny-reg reg regular-reg)
-    :d (throw (ex-info "Not implemented yet!" {:func "cvt.d"}))))
+    :d (throw (ex-info "Not implemented format" {:func "cvt.d"}))))
+
+(s/defn ^:private float-add!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   reg2 :- s/Str]
+  (let [reg-bin      (db.coproc1/read-value! (a.number-base/bin->numeric reg))
+        destiny-addr (a.number-base/bin->numeric destiny-reg)
+        reg2-bin     (db.coproc1/read-value! (a.number-base/bin->numeric reg2))
+        result       (+ (a.number-base/bin->float reg-bin) (a.number-base/bin->float reg2-bin))]
+    (db.coproc1/write-value! destiny-addr (l.binary/zero-extend-32bits (a.number-base/float->bin result)))))
+
+(s/defn ^:private double-add!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   reg2 :- s/Str]
+  (let [reg-addr        (a.number-base/bin->numeric reg)
+        reg2-adddr      (a.number-base/bin->numeric reg2)
+        destiny-addr    (a.number-base/bin->numeric destiny-reg)
+        reg-bin-hi      (db.coproc1/read-value! reg-addr)
+        reg-bin         (db.coproc1/read-value! (+ reg-addr 1))
+        reg2-bin-hi     (db.coproc1/read-value! reg2-adddr)
+        reg2-bin        (db.coproc1/read-value! (+ reg2-adddr 1))
+        double-reg-bin  (str reg-bin-hi reg-bin)
+        double-reg2-bin (str reg2-bin-hi reg2-bin)
+        result          (+ (a.number-base/bin->double double-reg-bin) (a.number-base/bin->double double-reg2-bin))
+        result-bin      (l.binary/zero-extend-nbits (a.number-base/double->bin result) 64)]
+    (db.coproc1/write-value! (+ 1 destiny-addr) (subs result-bin 0 32))
+    (db.coproc1/write-value! destiny-addr (subs result-bin 32 64))))
+
+(s/defn ^:private add!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   regular-reg :- s/Str
+   fmt :- s/Str]
+  (condp = (format-extension fmt)
+    :w (float-add! destiny-reg reg regular-reg)
+    :d (double-add! destiny-reg reg regular-reg)))
+
+(s/defn ^:private double-div!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   reg2 :- s/Str]
+  (let [reg-addr        (a.number-base/bin->numeric reg)
+        reg2-adddr      (a.number-base/bin->numeric reg2)
+        destiny-addr    (a.number-base/bin->numeric destiny-reg)
+        reg-bin-hi      (db.coproc1/read-value! reg-addr)
+        reg-bin         (db.coproc1/read-value! (+ reg-addr 1))
+        reg2-bin-hi     (db.coproc1/read-value! reg2-adddr)
+        reg2-bin        (db.coproc1/read-value! (+ reg2-adddr 1))
+        double-reg-bin  (str reg-bin-hi reg-bin)
+        double-reg2-bin (str reg2-bin-hi reg2-bin)
+        result          (/ (a.number-base/bin->double double-reg-bin) (a.number-base/bin->double double-reg2-bin))
+        result-bin      (l.binary/zero-extend-nbits (a.number-base/double->bin result) 64)]
+    (db.coproc1/write-value! (+ 1 destiny-addr) (subs result-bin 0 32))
+    (db.coproc1/write-value! destiny-addr (subs result-bin 32 64))))
+
+(s/defn ^:private div!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   regular-reg :- s/Str
+   fmt :- s/Str]
+  (condp = (format-extension fmt)
+    :w (throw (ex-info "Not implemented format" {:func "div"}))
+    :d (double-div! destiny-reg reg regular-reg)))
+
+(s/defn ^:private double-to-single!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   _ :- s/Str]
+  (let [reg-addr     (a.number-base/bin->numeric reg)
+        destiny-addr (a.number-base/bin->numeric destiny-reg)
+        hi-bin       (db.coproc1/read-value! reg-addr)
+        lo-bin       (db.coproc1/read-value! (+ reg-addr 1))
+        value-bin    (str hi-bin lo-bin)
+        value        (a.number-base/bin->double value-bin)
+        result       (a.number-base/float->bin (float value))]
+    (db.coproc1/write-value! destiny-addr (l.binary/zero-extend-32bits result))))
+
+(s/defn ^:private cvt-s!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   regular-reg :- s/Str
+   fmt :- s/Str]
+  (condp = (format-extension fmt)
+    :w (throw (ex-info "Not implemented format" {:func "cvt-s"}))
+    :d (double-to-single! destiny-reg reg regular-reg)))
+
+(s/defn ^:private multiply-single!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   reg2 :- s/Str]
+  (let [destiny-attr (a.number-base/bin->numeric destiny-reg)
+        reg-bin      (db.coproc1/read-value! (a.number-base/bin->numeric reg))
+        reg2-bin     (db.coproc1/read-value! (a.number-base/bin->numeric reg2))
+        result       (* (a.number-base/bin->float reg-bin) (a.number-base/bin->float reg2-bin))]
+    (db.coproc1/write-value! destiny-attr (l.binary/zero-extend-32bits (a.number-base/float->bin result)))))
+
+(s/defn ^:private multiply-double!
+    [destiny-reg :- s/Str
+     reg :- s/Str
+     reg2 :- s/Str]
+    (let [reg-addr        (a.number-base/bin->numeric reg)
+          reg2-adddr      (a.number-base/bin->numeric reg2)
+          destiny-addr    (a.number-base/bin->numeric destiny-reg)
+          reg-bin-hi      (db.coproc1/read-value! reg-addr)
+          reg-bin         (db.coproc1/read-value! (+ reg-addr 1))
+          reg2-bin-hi     (db.coproc1/read-value! reg2-adddr)
+          reg2-bin        (db.coproc1/read-value! (+ reg2-adddr 1))
+          double-reg-bin  (str reg-bin-hi reg-bin)
+          double-reg2-bin (str reg2-bin-hi reg2-bin)
+          result          (* (a.number-base/bin->double double-reg-bin) (a.number-base/bin->double double-reg2-bin))
+          result-bin      (l.binary/zero-extend-nbits (a.number-base/double->bin result) 64)]
+      (db.coproc1/write-value! (+ 1 destiny-addr) (subs result-bin 0 32))
+      (db.coproc1/write-value! destiny-addr (subs result-bin 32 64))))
+
+(s/defn ^:private mul!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   regular-reg :- s/Str
+   fmt :- s/Str]
+  (condp = (format-extension fmt)
+    :w (multiply-single! destiny-reg reg regular-reg)
+    :d (multiply-double! destiny-reg reg regular-reg)))
 
 (s/def ^:private fr-table-by-func
   {"000110" {:str "mov" :action mov!}
    "100001" {:str "cvt.d" :action cvt-d!}
-   "000000" {:str "add" :action (constantly nil)}
-   "000011" {:str "div" :action (constantly nil)}
-   "100000" {:str "cvt.s" :action (constantly nil)}
-   "000010" {:str "mul" :action (constantly nil)}})
+   "000000" {:str "add" :action add!}
+   "000011" {:str "div" :action div!}
+   "100000" {:str "cvt.s" :action cvt-s!}
+   "000010" {:str "mul" :action mul!}})
 
 (s/def ^:private fr-table-by-fmt
   {"00000" {:str "mfc1" :action move-float-to-reg! :regular-reg true}
