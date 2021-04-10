@@ -144,6 +144,17 @@
         destiny-value (db.memory/word-read-value! target-addr)]
     (db.memory/write-value! destiny-addr destiny-value)))
 
+
+(s/defn ^:private branch-equal-less-zero!
+  [_ :- s/Str
+   reg :- s/Str
+   immediate :- s/Str]
+  (let [rs-bin          (db.memory/read-reg-value! (a.number-base/bin->numeric reg))
+        branch-addr     (l.binary/signal-extend-32bits (str immediate "00"))
+        immediate-value (a.number-base/bin->numeric branch-addr)]
+    (when (<= (a.number-base/bin->numeric rs-bin) 0)
+      (db.memory/sum-jump-addr! immediate-value))))
+
 (s/def i-table
   {"001000" {:str "addi" :action addi!}
    "001001" {:str "addiu" :action addiu! :unsigned true}
@@ -158,7 +169,7 @@
    "110001" {:str "lwc1" :action load-word-float! :coproc1 true :memory-op true}
    "110101" {:str "ldc1" :action load-word-double! :coproc1 true :memory-op true}
    "100000" {:str "lb" :action load-byte! :memory-op true}
-   "000110" {:str "blez" :action (constantly nil)}})
+   "000110" {:str "blez" :action branch-equal-less-zero!}})
 
 (s/defn operation-str! :- s/Str
   [op-code :- s/Str

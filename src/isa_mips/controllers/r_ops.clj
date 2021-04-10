@@ -108,6 +108,23 @@
     (db.coproc1/set-hi! (subs result-bin 0 32))
     (db.coproc1/set-lo! (subs result-bin 32 64))))
 
+(s/defn ^:private and!
+  [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
+  (let [destiny-reg (a.number-base/bin->numeric rd)
+        rs-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric rs))
+        rt-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric rt))
+        result      (bit-and (a.number-base/bin->numeric rs-bin) (a.number-base/bin->numeric rt-bin))]
+    (db.memory/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32))))
+
+(s/defn ^:private set-less-than-u!
+  [rd :- s/Str rs :- s/Str rt :- s/Str _shamt :- s/Str]
+  (let [rd-addr (a.number-base/bin->numeric rd)
+        rs-bin  (db.memory/read-reg-value! (a.number-base/bin->numeric rs))
+        rt-bin  (db.memory/read-reg-value! (a.number-base/bin->numeric rt))
+        result  (if (< (a.number-base/bin->numeric rs-bin)
+                       (a.number-base/bin->numeric rt-bin)) 1 0)]
+    (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32))))
+
 (s/def r-table
   {"100000" {:str "add" :action add!}
    "100001" {:str "addu" :action addu! :unsigned true}
@@ -123,8 +140,8 @@
    "100101" {:str "or" :action or!}
    "001101" {:str "break" :action (constantly nil) :hide-destiny-reg true :hide-second-reg true :hide-first-reg true}
    "100110" {:str "xor" :action xor!}
-   "100100" {:str "and" :action (constantly nil)}
-   "101011" {:str "sltu" :action (constantly nil)}})
+   "100100" {:str "and" :action and!}
+   "101011" {:str "sltu" :action set-less-than-u!}})
 
 (s/defn operation-str! :- s/Str
   [func :- s/Str
