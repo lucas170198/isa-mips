@@ -16,8 +16,6 @@
 (s/defn read-reg-value!
   [address :- s/Int
    registers-storage :- p-storage/IStorageClient]
-  ;(println address)
-  ;;(clojure.pprint/pprint registers-storage)
   (storage-client/read-value! registers-storage address))
 
 (s/defn read-value!

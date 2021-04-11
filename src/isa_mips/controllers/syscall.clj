@@ -68,8 +68,7 @@
   [coproc-storage]
   (let [input-value (Double/parseDouble (read-line))
         bin (l.binary/zero-extend-nbits (a.number-base/double->bin input-value) 64)]
-    (db.coproc1/write-value! 1 (subs bin 0 32) coproc-storage)
-    (db.coproc1/write-value! 0 (subs bin 32 64) coproc-storage)))
+    (db.coproc1/write-double-on-memory! 1 bin coproc-storage)))
 
 
 (s/defn execute!
