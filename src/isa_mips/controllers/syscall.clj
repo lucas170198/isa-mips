@@ -1,6 +1,6 @@
 (ns isa-mips.controllers.syscall
   (:require [schema.core :as s]
-            [isa-mips.db.memory :as db.memory]
+            [isa-mips.db.registers :as db.memory]
             [isa-mips.adapters.number-base :as a.number-base]
             [isa-mips.db.coproc1 :as db.coproc1]
             [isa-mips.logic.binary :as l.binary]))
@@ -10,78 +10,78 @@
   (System/exit 0))
 
 (defn print-int!
-  []
-  (-> (db.memory/read-value-by-name! "$a0")
+  [storage]
+  (-> (db.memory/read-value-by-name! "$a0" storage)
       a.number-base/bin->numeric
       print)
   (flush))
 
 (defn print-float!
-  []
-  (-> (db.coproc1/read-value-by-name! "$f12")
+  [coproc-storage]
+  (-> (db.coproc1/read-value-by-name! "$f12" coproc-storage)
       a.number-base/bin->float
       print)
   (flush))
 
 (defn print-double!
-  []
-  (let [double-string (str (db.coproc1/read-value-by-name! "$f13")
-                           (db.coproc1/read-value-by-name! "$f12"))]
+  [coproc-storage]
+  (let [double-string (str (db.coproc1/read-value-by-name! "$f13" coproc-storage)
+                           (db.coproc1/read-value-by-name! "$f12" coproc-storage))]
     (print (a.number-base/bin->double double-string)))
   (flush))
 
-(s/defn ^:private printable-array! []
-  (loop [addr  (a.number-base/bin->numeric (db.memory/read-value-by-name! "$a0"))
+(s/defn ^:private printable-array! [storage]
+  (loop [addr  (a.number-base/bin->numeric (db.memory/read-value-by-name! "$a0" storage))
          array '()]
-    (let [character (a.number-base/bin->numeric (db.memory/read-reg-value! addr))]
+    (let [character (a.number-base/bin->numeric (db.memory/read-reg-value! addr storage))]
       (if (= character 0)
         array
         (recur (inc addr)
                (concat array (list (char character))))))))
 
 (defn print-string!
-  []
-  (->> (printable-array!)
+  [storage]
+  (->> (printable-array! storage)
        (apply str)
        print)
   (flush))
 
 (defn print-char!
-  []
-  (-> (db.memory/read-value-by-name! "$a0")
+  [storage]
+  (-> (db.memory/read-value-by-name! "$a0" storage)
       a.number-base/bin->numeric
       char
       print)
   (flush))
 
 (defn read-integer!
-  []
+  [storage]
   (let [input-value (Integer/parseInt (read-line))]
-    (db.memory/write-value! 2 (a.number-base/binary-string-zero-extend input-value 32))))
+    (db.memory/write-value! 2 (a.number-base/binary-string-zero-extend input-value 32) storage)))
 
 (defn read-float!
-  []
+  [coproc-storage]
   (let [input-value (Float/parseFloat (read-line))]
-    (db.coproc1/write-value! 0 (a.number-base/float->bin input-value))))
+    (db.coproc1/write-value! 0 (a.number-base/float->bin input-value) coproc-storage)))
 
 (defn read-double!
-  []
+  [coproc-storage]
   (let [input-value (Double/parseDouble (read-line))
         bin (l.binary/zero-extend-nbits (a.number-base/double->bin input-value) 64)]
-    (db.coproc1/write-value! 1 (subs bin 0 32))
-    (db.coproc1/write-value! 0 (subs bin 32 64))))
+    (db.coproc1/write-value! 1 (subs bin 0 32) coproc-storage)
+    (db.coproc1/write-value! 0 (subs bin 32 64) coproc-storage)))
 
 
 (s/defn execute!
-  []
-  (let [syscall-code (a.number-base/bin->numeric (db.memory/read-value-by-name! "$v0"))]
+  [storage coproc-storage]
+  (let [syscall-code (a.number-base/bin->numeric (db.memory/read-value-by-name! "$v0" storage))]
     (case syscall-code
-      1 (print-int!)
-      2 (print-float!)
-      3 (print-double!)
-      4 (print-string!)
-      5 (read-integer!)
-      6 (read-float!)
-      7 (read-double!)
-      11 (print-char!)
+      1 (print-int! storage)
+      2 (print-float! coproc-storage)
+      3 (print-double! coproc-storage)
+      4 (print-string! storage)
+      5 (read-integer! storage)
+      6 (read-float! coproc-storage)
+      7 (read-double! coproc-storage)
+      11 (print-char! storage)
       10 (exit!))))

@@ -38,6 +38,7 @@
 
 (s/defn decode-binary-instruction :- m.instruction/BaseInstruction
   [binary-string]
+  ;(println binary-string)
   (cond
     (= (Integer/parseUnsignedInt binary-string 2) 0x0000000C)
     {:format :SYSCALL}

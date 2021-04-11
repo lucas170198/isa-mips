@@ -2,19 +2,9 @@
   (:require [schema.core :as s]
             [isa-mips.adapters.number-base :as a.number-base]
             [isa-mips.models.memory :as m.memory]
-            [isa-mips.models.instruction :as m.instruction]))
-
-;TODO: Refactor, dont repeat code. (code very similar to the regular memory). Maybe a record can be use instead
-(s/defn ^:private register-class
-        [prefix init-idx vector]
-        (map-indexed (fn [idx _]
-                       {:addr (+ idx init-idx)
-                        :meta {:name  (str prefix idx)
-                               :value (a.number-base/binary-string-zero-extend 0)}}) vector))
-(def mem
-  (->> (vec (register-class "$f" 0 (range 32)))
-       (s/validate m.memory/Store)
-       (atom)))
+            [isa-mips.models.instruction :as m.instruction]
+            [isa-mips.protocols.storage-client :as p-storage]
+            [isa-mips.protocols.storage-client :as storage-client]))
 
 (def hi (atom (a.number-base/binary-string-zero-extend 0)))
 
@@ -28,39 +18,37 @@
   [lo-value :- s/Str]
   (reset! lo lo-value))
 
-(defn ^:private get-by-addr
-  [address]
-  (-> #(= (:addr %) address)
-      (filterv @mem)
-      first))
-
-(defn ^:private get-by-name
-  [name]
-  (-> #(= (get-in % [:meta :name]) name)
-      (filterv @mem)
-      first))
-
-(defn ^:private update-if
-  "Update a element that matches with the pred"
-  [coll value keys pred-fn]
-  (mapv #(if (pred-fn %)
-           (assoc-in % keys value) %) coll))
-
 (s/defn read-value-by-name! :- m.instruction/fourBytesString
-  [name :- s/Str]
-  (get-in (get-by-name name) [:meta :value]))
+  [name :- s/Str
+   coproc1-storage :- p-storage/IStorageClient]
+  (storage-client/read-value-by-name! coproc1-storage name))
 
 (s/defn read-name!
-  [address :- s/Int]
-  (get-in (get-by-addr address) [:meta :name]))
+  [address :- s/Int
+   coproc1-storage :- p-storage/IStorageClient]
+  (storage-client/read-name! coproc1-storage address))
 
 (s/defn write-value! :- (s/maybe m.memory/Store)
   [address :- s/Int
-   value :- m.instruction/fourBytesString]
-  (if (nil? (get-by-addr address))
-    (swap! mem conj {:addr address :meta {:value value}})
-    (reset! mem (update-if @mem value [:meta :value] #(= (:addr %) address)))))
+   value :- m.instruction/fourBytesString
+   coproc1-storage :- p-storage/IStorageClient]
+  (storage-client/write-value! coproc1-storage address value))
 
 (s/defn read-value! :- m.instruction/fourBytesString
-  [address :- s/Int]
-  (get-in (get-by-addr address) [:meta :value]))
+  [address :- s/Int
+   coproc1-storage :- p-storage/IStorageClient]
+  (storage-client/read-value! coproc1-storage address))
+
+(s/defn write-double-on-memory!
+  [addr :- s/Int
+   value :- s/Str
+   storage :- p-storage/IStorageClient]
+  (write-value! (+ addr 1) (subs value 0 32) storage)
+  (write-value! addr (subs value 32 64) storage))
+
+(s/defn load-double-from-memory!
+  [reg :- s/Str
+   storage :- p-storage/IStorageClient]
+  (let [lo-addr (a.number-base/bin->numeric reg)
+        hi-addr (+ 1 lo-addr)]
+    (str (read-value! hi-addr storage) (read-value! lo-addr storage))))
