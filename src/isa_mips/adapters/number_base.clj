@@ -6,6 +6,32 @@
   [bin :- s/Str]
   (Integer/parseUnsignedInt bin 2))
 
+(s/defn bin->float
+  [bin :- s/Str]
+  (-> (new BigInteger bin 2)
+      (.intValue)
+      (Float/intBitsToFloat)))
+
+(s/defn float->bin
+  [value :- Float]
+  (-> (Float/floatToIntBits value)
+      (Integer/toBinaryString)))
+
+(s/defn double->bin
+  [value :- Double]
+  (-> (Double/doubleToLongBits value)
+      (Long/toBinaryString)))
+
+(s/defn bin->double
+  [bin :- s/Str]
+  (-> (new BigInteger bin 2)
+      (.longValue)
+      (Double/longBitsToDouble)))
+
+(s/defn double->float
+  [value]
+  (.floatValue value))
+
 (defn binary-string-zero-extend
   "Returns a binary representation of a byte value.
   reference: https://gist.github.com/benzap/7cda95aeaeecac12b5763a72ddb89310 "

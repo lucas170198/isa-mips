@@ -2,47 +2,63 @@
   (:require [schema.core :as s]
             [isa-mips.controllers.r-ops :as c.r-ops]
             [isa-mips.models.instruction :as m.instruction]
-            [isa-mips.db.memory :as db.memory]
+            [isa-mips.db.registers :as db.memory]
             [isa-mips.logic.instructions :as l.instructions]
             [isa-mips.controllers.i-ops :as c.i-ops]
             [isa-mips.controllers.syscall :as c.syscall]
-            [isa-mips.controllers.j-ops :as c.j-ops]))
+            [isa-mips.controllers.j-ops :as c.j-ops]
+            [isa-mips.controllers.fr-ops :as c.fr-ops]
+            [isa-mips.protocols.storage-client :as p-storage]))
 
 (defmulti execute-instruction! "Return nil for success execution"
-          (fn [instruction] (:format instruction)))
+          (fn [instruction _ _] (:format instruction)))
 
 (s/defmethod execute-instruction! :R
-  [{func        :funct
-    destiny-reg :rd
-    first-reg   :rs
-    second-reg  :rt
-    shamt       :shamt} :- m.instruction/RInstruction]
-  (c.r-ops/execute! func destiny-reg first-reg second-reg shamt))
+  [instruction :- m.instruction/RInstruction
+   storage :- p-storage/IStorageClient
+   coproc-storage :- p-storage/IStorageClient]
+  (c.r-ops/execute! instruction storage coproc-storage))
+
 
 (s/defmethod execute-instruction! :I
-  [{op-code     :op
-    destiny-reg :rt
-    reg         :rs
-    immediate   :immediate} :- m.instruction/IInstruction]
-  (c.i-ops/execute! op-code destiny-reg reg immediate))
+  [instruction :- m.instruction/IInstruction
+   storage :- p-storage/IStorageClient
+   coproc-storage :- p-storage/IStorageClient]
+  (c.i-ops/execute! instruction storage coproc-storage))
 
 (s/defmethod execute-instruction! :J
-  [{op-code :op
-    addr    :target-address} :- m.instruction/JInstruction]
-  (c.j-ops/execute! op-code addr))
+  [instruction :- m.instruction/JInstruction
+   storage :- p-storage/IStorageClient
+   _]
+  (c.j-ops/execute! instruction storage))
 
 
 (s/defmethod execute-instruction! :SYSCALL
-  [_]
-  (c.syscall/execute!))
+  [_ storage coproc-storage]
+  (c.syscall/execute! storage coproc-storage))
 
-(defn run-current-instruction! []
-  (-> @db.memory/pc
-      (db.memory/read-value!)
-      (l.instructions/decode-binary-instruction)
-      (execute-instruction!)))
+(s/defmethod execute-instruction! :NOP [_ _ _])
 
-(s/defn run-program! []
+(s/defmethod execute-instruction! :FR
+  [instruction :- m.instruction/FRInstruction
+   storage :- p-storage/IStorageClient
+   coproc-storage :- p-storage/IStorageClient]
+  (c.fr-ops/execute! instruction storage coproc-storage))
+
+(defn run-instruction!
+  ([storage coproc-storage] (run-instruction! @db.memory/pc storage coproc-storage))
+  ([addr storage coproc-storage]
+   (-> addr
+       (db.memory/read-reg-value! storage)
+       (l.instructions/decode-binary-instruction)
+       (execute-instruction! storage coproc-storage))))
+
+(s/defn run-program!
+  [storage coproc-storage]
   (while true                                               ;Stops in the exit syscall
-    (run-current-instruction!)
-    (db.memory/inc-program-counter)))
+    (run-instruction! storage coproc-storage)
+    (when-let [jump-addr @db.memory/jump-addr]              ;Verifies if the last instruction was a jump one
+      (run-instruction! (+ 4 @db.memory/pc) storage coproc-storage)                ;run slotted delay instruction
+      (db.memory/set-program-counter! jump-addr)
+      (db.memory/clear-jump-addr!))
+    (db.memory/inc-program-counter!)))

@@ -25,3 +25,11 @@
 (abstract-map/extend-schema JInstruction BaseInstruction [:J] {:target-address (bitString 26)})
 
 (abstract-map/extend-schema Syscall BaseInstruction [:SYSCALL] {})
+
+(abstract-map/extend-schema Nop BaseInstruction [:NOP] {})
+
+(abstract-map/extend-schema FRInstruction BaseInstruction [:FR] {:fmt   (bitString 5)
+                                                                :ft    (bitString 5)
+                                                                :fs    (bitString 5)
+                                                                :fd    (bitString 5)
+                                                                :funct (bitString 6)})
