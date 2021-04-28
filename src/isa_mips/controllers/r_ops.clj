@@ -1,7 +1,7 @@
 (ns isa-mips.controllers.r-ops
   (:require [schema.core :as s]
             [clojure.string :as string]
-            [isa-mips.db.registers :as db.memory]
+            [isa-mips.db.registers :as db.registers]
             [isa-mips.logic.binary :as l.binary]
             [isa-mips.adapters.number-base :as a.number-base]
             [isa-mips.db.coproc1 :as db.coproc1]
@@ -16,10 +16,10 @@
    storage :- p-storage/IStorageClient
    _]
   (let [rd-addr (a.number-base/bin->numeric rd)
-        rs-bin  (db.memory/read-reg-value! (a.number-base/bin->numeric rs) storage)
-        rt-bin  (db.memory/read-reg-value! (a.number-base/bin->numeric rt) storage)
+        rs-bin  (db.registers/read-reg-value! (a.number-base/bin->numeric rs) storage)
+        rt-bin  (db.registers/read-reg-value! (a.number-base/bin->numeric rt) storage)
         result  (l.binary/signed-sum rs-bin rt-bin)]
-    (db.memory/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32) storage)))
+    (db.registers/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32) storage)))
 
 (s/defn ^:private addu!
   [rd :- s/Str
@@ -29,10 +29,10 @@
    storage :- p-storage/IStorageClient
    _]
   (let [rd-addr (a.number-base/bin->numeric rd)
-        rs-bin  (db.memory/read-reg-value! (a.number-base/bin->numeric rs) storage)
-        rt-bin  (db.memory/read-reg-value! (a.number-base/bin->numeric rt) storage)
+        rs-bin  (db.registers/read-reg-value! (a.number-base/bin->numeric rs) storage)
+        rt-bin  (db.registers/read-reg-value! (a.number-base/bin->numeric rt) storage)
         result  (l.binary/sum rs-bin rt-bin)]
-    (db.memory/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32) storage)))
+    (db.registers/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32) storage)))
 
 (s/defn ^:private set-less-than!
   [rd :- s/Str
@@ -42,11 +42,11 @@
    storage :- p-storage/IStorageClient
    _]
   (let [rd-addr (a.number-base/bin->numeric rd)
-        rs-bin  (db.memory/read-reg-value! (a.number-base/bin->numeric rs) storage)
-        rt-bin  (db.memory/read-reg-value! (a.number-base/bin->numeric rt) storage)
+        rs-bin  (db.registers/read-reg-value! (a.number-base/bin->numeric rs) storage)
+        rt-bin  (db.registers/read-reg-value! (a.number-base/bin->numeric rt) storage)
         result  (if (< (a.number-base/bin->numeric rs-bin)
                        (a.number-base/bin->numeric rt-bin)) 1 0)]
-    (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32) storage)))
+    (db.registers/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32) storage)))
 
 (s/defn ^:private jump-register!
   [_ :- s/Str
@@ -55,8 +55,8 @@
    _ :- s/Str
    storage :- p-storage/IStorageClient
    _]
-  (let [target-address (db.memory/read-reg-value! (a.number-base/bin->numeric rs) storage)]
-    (db.memory/set-jump-addr! (a.number-base/bin->numeric target-address))))
+  (let [target-address (db.registers/read-reg-value! (a.number-base/bin->numeric rs) storage)]
+    (db.registers/set-jump-addr! (a.number-base/bin->numeric target-address))))
 
 (s/defn ^:private shift-left!
   [rd :- s/Str
@@ -66,10 +66,10 @@
    storage :- p-storage/IStorageClient
    _]
   (let [rd-addr     (a.number-base/bin->numeric rd)
-        rt-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric rt) storage)
+        rt-bin      (db.registers/read-reg-value! (a.number-base/bin->numeric rt) storage)
         shamt-value (a.number-base/bin->numeric shamt)
         result      (bit-shift-left (a.number-base/bin->numeric rt-bin) shamt-value)]
-    (db.memory/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32) storage)))
+    (db.registers/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32) storage)))
 
 (s/defn ^:private shift-right!
   [rd :- s/Str
@@ -79,10 +79,10 @@
    storage :- p-storage/IStorageClient
    _]
   (let [rd-addr     (a.number-base/bin->numeric rd)
-        rt-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric rt) storage)
+        rt-bin      (db.registers/read-reg-value! (a.number-base/bin->numeric rt) storage)
         shamt-value (a.number-base/bin->numeric shamt)
         result      (bit-shift-right (a.number-base/bin->numeric rt-bin) shamt-value)]
-    (db.memory/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32) storage)))
+    (db.registers/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32) storage)))
 
 (s/defn ^:private r-jump-and-link!
   [rd :- s/Str
@@ -92,10 +92,10 @@
    storage :- p-storage/IStorageClient
    _]
   (let [rd-addr               (a.number-base/bin->numeric rd)
-        jump-addr             (db.memory/read-reg-value! (a.number-base/bin->numeric rs) storage)
-        next-instruction-addr (+ @db.memory/pc 4)]
-    (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend next-instruction-addr 32) storage)
-    (db.memory/set-jump-addr! (- (Integer/parseUnsignedInt jump-addr 2) 4))))
+        jump-addr             (db.registers/read-reg-value! (a.number-base/bin->numeric rs) storage)
+        next-instruction-addr (+ @db.registers/pc 4)]
+    (db.registers/write-value! rd-addr (a.number-base/binary-string-zero-extend next-instruction-addr 32) storage)
+    (db.registers/set-jump-addr! (- (Integer/parseUnsignedInt jump-addr 2) 4))))
 
 (s/defn ^:private or!
   [rd :- s/Str
@@ -105,10 +105,10 @@
    storage :- p-storage/IStorageClient
    _]
   (let [destiny-reg (a.number-base/bin->numeric rd)
-        rs-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric rs) storage)
-        rt-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric rt) storage)
+        rs-bin      (db.registers/read-reg-value! (a.number-base/bin->numeric rs) storage)
+        rt-bin      (db.registers/read-reg-value! (a.number-base/bin->numeric rt) storage)
         result      (bit-or (a.number-base/bin->numeric rs-bin) (a.number-base/bin->numeric rt-bin))]
-    (db.memory/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32) storage)))
+    (db.registers/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32) storage)))
 
 (s/defn ^:private xor!
   [rd :- s/Str
@@ -118,10 +118,10 @@
    storage :- p-storage/IStorageClient
    _]
   (let [destiny-reg (a.number-base/bin->numeric rd)
-        rs-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric rs) storage)
-        rt-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric rt) storage)
+        rs-bin      (db.registers/read-reg-value! (a.number-base/bin->numeric rs) storage)
+        rt-bin      (db.registers/read-reg-value! (a.number-base/bin->numeric rt) storage)
         result      (bit-xor (a.number-base/bin->numeric rs-bin) (a.number-base/bin->numeric rt-bin))]
-    (db.memory/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32) storage)))
+    (db.registers/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32) storage)))
 
 (s/defn ^:private div!
   [_ :- s/Str
@@ -130,8 +130,8 @@
    _ :- s/Str
    storage :- p-storage/IStorageClient
    _]
-  (let [rs-bin     (db.memory/read-reg-value! (a.number-base/bin->numeric rs) storage)
-        rt-bin     (db.memory/read-reg-value! (a.number-base/bin->numeric rt) storage)
+  (let [rs-bin     (db.registers/read-reg-value! (a.number-base/bin->numeric rs) storage)
+        rt-bin     (db.registers/read-reg-value! (a.number-base/bin->numeric rt) storage)
         rs-value   (a.number-base/bin->numeric rs-bin)
         rt-value   (a.number-base/bin->numeric rt-bin)
         div-result (/ rs-value rt-value)
@@ -147,7 +147,7 @@
    storage :- p-storage/IStorageClient
    _]
   (let [rd-addr (a.number-base/bin->numeric rd)]
-    (db.memory/write-value! rd-addr @db.coproc1/hi storage)))
+    (db.registers/write-value! rd-addr @db.coproc1/hi storage)))
 
 (s/defn ^:private mflo!
   [rd :- s/Str
@@ -157,7 +157,7 @@
    storage :- p-storage/IStorageClient
    _]
   (let [rd-addr (a.number-base/bin->numeric rd)]
-    (db.memory/write-value! rd-addr @db.coproc1/lo storage)))
+    (db.registers/write-value! rd-addr @db.coproc1/lo storage)))
 
 (s/defn ^:private mult!
   [_ :- s/Str
@@ -166,8 +166,8 @@
    _ :- s/Str
    storage :- p-storage/IStorageClient
    _]
-  (let [rs-bin     (db.memory/read-reg-value! (a.number-base/bin->numeric rs) storage)
-        rt-bin     (db.memory/read-reg-value! (a.number-base/bin->numeric rt) storage)
+  (let [rs-bin     (db.registers/read-reg-value! (a.number-base/bin->numeric rs) storage)
+        rt-bin     (db.registers/read-reg-value! (a.number-base/bin->numeric rt) storage)
         rs-value   (a.number-base/bin->numeric rs-bin)
         rt-value   (a.number-base/bin->numeric rt-bin)
         result     (* rs-value rt-value)
@@ -183,10 +183,10 @@
    storage :- p-storage/IStorageClient
    _]
   (let [destiny-reg (a.number-base/bin->numeric rd)
-        rs-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric rs) storage)
-        rt-bin      (db.memory/read-reg-value! (a.number-base/bin->numeric rt) storage)
+        rs-bin      (db.registers/read-reg-value! (a.number-base/bin->numeric rs) storage)
+        rt-bin      (db.registers/read-reg-value! (a.number-base/bin->numeric rt) storage)
         result      (bit-and (a.number-base/bin->numeric rs-bin) (a.number-base/bin->numeric rt-bin))]
-    (db.memory/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32) storage)))
+    (db.registers/write-value! destiny-reg (a.number-base/binary-string-signal-extend result 32) storage)))
 
 (s/defn ^:private set-less-than-u!
   [rd :- s/Str
@@ -196,11 +196,11 @@
    storage :- p-storage/IStorageClient
    _]
   (let [rd-addr (a.number-base/bin->numeric rd)
-        rs-bin  (db.memory/read-reg-value! (a.number-base/bin->numeric rs) storage)
-        rt-bin  (db.memory/read-reg-value! (a.number-base/bin->numeric rt) storage)
+        rs-bin  (db.registers/read-reg-value! (a.number-base/bin->numeric rs) storage)
+        rt-bin  (db.registers/read-reg-value! (a.number-base/bin->numeric rt) storage)
         result  (if (< (a.number-base/bin->numeric rs-bin)
                        (a.number-base/bin->numeric rt-bin)) 1 0)]
-    (db.memory/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32) storage)))
+    (db.registers/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32) storage)))
 
 (s/def r-table
   {"100000" {:str "add" :action add!}
@@ -231,12 +231,12 @@
         func-name        (:str operation)
         _assert          (assert (not (nil? operation)) (str "Operation not found on r-table\n func: " func))
         shamt?           (:shamt operation)
-        destiny-reg-name (when-not (:hide-destiny-reg operation) (db.memory/read-name! (a.number-base/bin->numeric destiny-reg) storage))
+        destiny-reg-name (when-not (:hide-destiny-reg operation) (db.registers/read-name! (a.number-base/bin->numeric destiny-reg) storage))
         first-reg-name   (when-not (or shamt? (:hide-first-reg operation))
-                           (db.memory/read-name! (a.number-base/bin->numeric first-reg) storage))
+                           (db.registers/read-name! (a.number-base/bin->numeric first-reg) storage))
         shamt            (when shamt? (a.number-base/bin->numeric shamt))
         second-name      (when-not (:hide-second-reg operation)
-                           (db.memory/read-name! (a.number-base/bin->numeric second-reg) storage))]
+                           (db.registers/read-name! (a.number-base/bin->numeric second-reg) storage))]
     (str func-name " " (string/join ", " (remove nil? [destiny-reg-name first-reg-name second-name shamt])))))
 
 (s/defn execute!

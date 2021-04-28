@@ -1,6 +1,6 @@
 (ns isa-mips.controllers.syscall
   (:require [schema.core :as s]
-            [isa-mips.db.registers :as db.memory]
+            [isa-mips.db.registers :as db.registers]
             [isa-mips.adapters.number-base :as a.number-base]
             [isa-mips.db.coproc1 :as db.coproc1]
             [isa-mips.logic.binary :as l.binary]))
@@ -11,7 +11,7 @@
 
 (defn print-int!
   [storage]
-  (-> (db.memory/read-value-by-name! "$a0" storage)
+  (-> (db.registers/read-value-by-name! "$a0" storage)
       a.number-base/bin->numeric
       print)
   (flush))
@@ -31,9 +31,9 @@
   (flush))
 
 (s/defn ^:private printable-array! [storage]
-  (loop [addr  (a.number-base/bin->numeric (db.memory/read-value-by-name! "$a0" storage))
+  (loop [addr  (a.number-base/bin->numeric (db.registers/read-value-by-name! "$a0" storage))
          array '()]
-    (let [character (a.number-base/bin->numeric (db.memory/read-reg-value! addr storage))]
+    (let [character (a.number-base/bin->numeric (db.registers/read-reg-value! addr storage))]
       (if (= character 0)
         array
         (recur (inc addr)
@@ -48,7 +48,7 @@
 
 (defn print-char!
   [storage]
-  (-> (db.memory/read-value-by-name! "$a0" storage)
+  (-> (db.registers/read-value-by-name! "$a0" storage)
       a.number-base/bin->numeric
       char
       print)
@@ -57,7 +57,7 @@
 (defn read-integer!
   [storage]
   (let [input-value (Integer/parseInt (read-line))]
-    (db.memory/write-value! 2 (a.number-base/binary-string-zero-extend input-value 32) storage)))
+    (db.registers/write-value! 2 (a.number-base/binary-string-zero-extend input-value 32) storage)))
 
 (defn read-float!
   [coproc-storage]
@@ -74,7 +74,7 @@
 
 (s/defn execute!
   [storage coproc-storage]
-  (let [syscall-code (a.number-base/bin->numeric (db.memory/read-value-by-name! "$v0" storage))]
+  (let [syscall-code (a.number-base/bin->numeric (db.registers/read-value-by-name! "$v0" storage))]
     (case syscall-code
       1 (print-int! storage)
       2 (print-float! coproc-storage)

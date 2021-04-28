@@ -2,7 +2,7 @@
   (:require [schema.core :as s]
             [isa-mips.controllers.r-ops :as c.r-ops]
             [isa-mips.models.instruction :as m.instruction]
-            [isa-mips.db.registers :as db.memory]
+            [isa-mips.db.registers :as db.registers]
             [isa-mips.logic.instructions :as l.instructions]
             [isa-mips.controllers.i-ops :as c.i-ops]
             [isa-mips.controllers.syscall :as c.syscall]
@@ -46,10 +46,10 @@
   (c.fr-ops/execute! instruction storage coproc-storage))
 
 (defn run-instruction!
-  ([storage coproc-storage] (run-instruction! @db.memory/pc storage coproc-storage))
+  ([storage coproc-storage] (run-instruction! @db.registers/pc storage coproc-storage))
   ([addr storage coproc-storage]
    (-> addr
-       (db.memory/read-reg-value! storage)
+       (db.registers/read-reg-value! storage)
        (l.instructions/decode-binary-instruction)
        (execute-instruction! storage coproc-storage))))
 
@@ -57,8 +57,8 @@
   [storage coproc-storage]
   (while true                                               ;Stops in the exit syscall
     (run-instruction! storage coproc-storage)
-    (when-let [jump-addr @db.memory/jump-addr]              ;Verifies if the last instruction was a jump one
-      (run-instruction! (+ 4 @db.memory/pc) storage coproc-storage)                ;run slotted delay instruction
-      (db.memory/set-program-counter! jump-addr)
-      (db.memory/clear-jump-addr!))
-    (db.memory/inc-program-counter!)))
+    (when-let [jump-addr @db.registers/jump-addr]              ;Verifies if the last instruction was a jump one
+      (run-instruction! (+ 4 @db.registers/pc) storage coproc-storage)                ;run slotted delay instruction
+      (db.registers/set-program-counter! jump-addr)
+      (db.registers/clear-jump-addr!))
+    (db.registers/inc-program-counter!)))

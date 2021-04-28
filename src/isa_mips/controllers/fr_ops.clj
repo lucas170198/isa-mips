@@ -2,7 +2,7 @@
   (:require [schema.core :as s]
             [isa-mips.db.coproc1 :as db.coproc1]
             [isa-mips.adapters.number-base :as a.number-base]
-            [isa-mips.db.registers :as db.memory]
+            [isa-mips.db.registers :as db.registers]
             [clojure.string :as string]
             [isa-mips.logic.binary :as l.binary]
             [isa-mips.protocols.storage-client :as p-storage]
@@ -25,7 +25,7 @@
    coproc-storage :- p-storage/IStorageClient]
   (let [destiny-addr (a.number-base/bin->numeric regular-reg)
         reg-value    (db.coproc1/read-value! (a.number-base/bin->numeric reg) coproc-storage)]
-    (db.memory/write-value! destiny-addr reg-value storage)))
+    (db.registers/write-value! destiny-addr reg-value storage)))
 
 (s/defn ^:private move-word-to-float!
   [_ :- s/Str
@@ -36,7 +36,7 @@
    coproc-storage :- p-storage/IStorageClient]
   (let [read-addr    (a.number-base/bin->numeric regular-reg)
         destiny-addr (a.number-base/bin->numeric reg)
-        reg-value    (db.memory/read-reg-value! read-addr storage)]
+        reg-value    (db.registers/read-reg-value! read-addr storage)]
     (db.coproc1/write-value! destiny-addr reg-value coproc-storage)))
 
 (s/defn ^:private double-move!
@@ -239,7 +239,7 @@
         mem-reg?    (:mem-reg operation)
         fd-name     (when-not mem-reg? (db.coproc1/read-name! (a.number-base/bin->numeric fd) coproc-storage))
         fs-name     (db.coproc1/read-name! (a.number-base/bin->numeric fs) coproc-storage)
-        rt-name     (when second-reg? (db.memory/read-name! (a.number-base/bin->numeric ft) storage))]
+        rt-name     (when second-reg? (db.registers/read-name! (a.number-base/bin->numeric ft) storage))]
     (str func-name " " (string/join ", " (remove nil? [rt-name fd-name fs-name])))))
 
 (s/defn execute!
