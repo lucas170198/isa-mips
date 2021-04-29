@@ -3,6 +3,7 @@
             [isa-mips.controllers.r-ops :as c.r-ops]
             [isa-mips.models.instruction :as m.instruction]
             [isa-mips.db.registers :as db.registers]
+            [isa-mips.db.simulation-summary :as db.simulation-summary]
             [isa-mips.logic.instructions :as l.instructions]
             [isa-mips.controllers.i-ops :as c.i-ops]
             [isa-mips.controllers.syscall :as c.syscall]
@@ -11,7 +12,10 @@
             [isa-mips.protocols.storage-client :as p-storage]))
 
 (defmulti execute-instruction! "Return nil for success execution"
-          (fn [instruction _ _] (:format instruction)))
+          (fn [{format :format} _ _]
+            (when (contains? #{:R :I :J :FR :FI} format)
+             (db.simulation-summary/inc-instructions-count format))
+            format))
 
 (s/defmethod execute-instruction! :R
   [instruction :- m.instruction/RInstruction
@@ -61,5 +65,4 @@
       (run-instruction! (+ 4 @db.registers/pc) storage coproc-storage)                ;run slotted delay instruction
       (db.registers/set-program-counter! jump-addr)
       (db.registers/clear-jump-addr!))
-    (db.registers/inc-program-counter!))
-  )
+    (db.registers/inc-program-counter!)))

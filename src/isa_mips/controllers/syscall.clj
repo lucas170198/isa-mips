@@ -2,11 +2,13 @@
   (:require [schema.core :as s]
             [isa-mips.db.registers :as db.registers]
             [isa-mips.adapters.number-base :as a.number-base]
+            [isa-mips.controllers.simulation-summary :as c.simulation-summary]
             [isa-mips.db.coproc1 :as db.coproc1]
             [isa-mips.logic.binary :as l.binary]))
 
 (defn exit! []
   (println)
+  (c.simulation-summary/print-stats!)
   (System/exit 0))
 
 (defn print-int!
