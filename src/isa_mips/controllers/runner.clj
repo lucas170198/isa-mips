@@ -61,4 +61,5 @@
       (run-instruction! (+ 4 @db.registers/pc) storage coproc-storage)                ;run slotted delay instruction
       (db.registers/set-program-counter! jump-addr)
       (db.registers/clear-jump-addr!))
-    (db.registers/inc-program-counter!)))
+    (db.registers/inc-program-counter!))
+  )
