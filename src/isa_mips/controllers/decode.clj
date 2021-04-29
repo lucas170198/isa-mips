@@ -5,7 +5,9 @@
             [isa-mips.controllers.i-ops :as c.i-ops]
             [isa-mips.controllers.j-ops :as c.j-ops]
             [isa-mips.controllers.fr-ops :as c.fr-ops]
-            [isa-mips.protocols.storage-client :as p-storage]))
+            [isa-mips.protocols.storage-client :as p-storage]
+            [isa-mips.logic.text-section :as l.text-section]
+            [isa-mips.logic.binary :as l.binary]))
 
 (defmulti instruction-string! (fn [instruction _ _] (:format instruction)))
 
@@ -41,9 +43,22 @@
    _]
   (c.j-ops/operation-str! instruction))
 
+(s/defn ^:private print-instruction-table!
+  [instructions]
+  (clojure.pprint/print-table [:address :hex :decoded] instructions))
+
+(s/defn ^:private hex-address
+  [offset]
+  (-> (l.text-section/instruction-address offset)
+      Integer/toBinaryString
+      l.binary/bin->hex-str))
+
 (s/defn print-instructions!
   [storage :- p-storage/IStorageClient
    coproc-storage :- p-storage/IStorageClient
    instructions :- [m.instruction/BaseInstruction]]
-  (doseq [inst instructions]
-    (println (instruction-string! inst storage coproc-storage))))
+  (-> (fn [idx inst] {:address (hex-address idx)
+                      :hex     (:hex inst)
+                      :decoded (instruction-string! inst storage coproc-storage)})
+      (map-indexed instructions)
+      print-instruction-table!))

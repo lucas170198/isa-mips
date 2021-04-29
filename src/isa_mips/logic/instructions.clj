@@ -1,6 +1,7 @@
 (ns isa-mips.logic.instructions
   (:require [schema.core :as s]
-            [isa-mips.models.instruction :as m.instruction]))
+            [isa-mips.models.instruction :as m.instruction]
+            [isa-mips.logic.binary :as l.binary]))
 
 (s/defn ^:private R-format-instruction
   [binary-string]
@@ -10,7 +11,8 @@
    :rt     (subs binary-string 11 16)
    :rd     (subs binary-string 16 21)
    :shamt  (subs binary-string 21 26)
-   :funct  (subs binary-string 26 32)})
+   :funct  (subs binary-string 26 32)
+   :hex    (l.binary/bin->hex-str binary-string)})
 
 (s/defn ^:private I-format-instruction
   [binary-string]
@@ -18,13 +20,15 @@
    :op        (subs binary-string 0 6)
    :rs        (subs binary-string 6 11)
    :rt        (subs binary-string 11 16)
-   :immediate (subs binary-string 16 32)})
+   :immediate (subs binary-string 16 32)
+   :hex       (l.binary/bin->hex-str binary-string)})
 
 (s/defn ^:private J-format-instruction
   [binary-string]
   {:format         :J
    :op             (subs binary-string 0 6)
-   :target-address (subs binary-string 6 32)})
+   :target-address (subs binary-string 6 32)
+   :hex            (l.binary/bin->hex-str binary-string)})
 
 (s/defn ^:private FR-format-instruction
   [binary-string]
@@ -34,16 +38,19 @@
    :ft     (subs binary-string 11 16)
    :fs     (subs binary-string 16 21)
    :fd     (subs binary-string 21 26)
-   :funct  (subs binary-string 26 32)})
+   :funct  (subs binary-string 26 32)
+   :hex    (l.binary/bin->hex-str binary-string)})
 
 (s/defn decode-binary-instruction :- m.instruction/BaseInstruction
   [binary-string]
   (cond
     (= (Integer/parseUnsignedInt binary-string 2) 0x0000000C)
-    {:format :SYSCALL}
+    {:format :SYSCALL
+     :hex    (l.binary/bin->hex-str binary-string)}
 
     (= (Integer/parseUnsignedInt binary-string 2) 0x00000000)
-    {:format :NOP}
+    {:format :NOP
+     :hex    (l.binary/bin->hex-str binary-string)}
 
     (= (subs binary-string 0 6) "000000")
     (R-format-instruction binary-string)
