@@ -2,7 +2,7 @@
   (:require [schema.core :as s]))
 
 
-(s/def instructions-count (atom {:R 0 :I 0 :J 0 :FR 0 :FI 0}))
+(s/def instructions-summary (atom {:R 0 :I 0 :J 0 :FR 0 :FI 0}))
 
 (s/def start-execution (atom (System/currentTimeMillis)))
 
@@ -10,6 +10,7 @@
   []
   (- (System/currentTimeMillis) @start-execution))
 
-(s/defn inc-instructions-count
+(s/defn inc-instructions-summary
   [type :- s/Keyword]
-  (swap! instructions-count #(update % type inc)))
+  (swap! instructions-summary #(update % type inc)))
+

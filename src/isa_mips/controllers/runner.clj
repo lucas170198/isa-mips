@@ -14,7 +14,7 @@
 (defmulti execute-instruction! "Return nil for success execution"
           (fn [{format :format} _ _]
             (when (contains? #{:R :I :J :FR :FI} format)
-             (db.simulation-summary/inc-instructions-count format))
+              (db.simulation-summary/inc-instructions-summary format))
             format))
 
 (s/defmethod execute-instruction! :R
@@ -39,11 +39,11 @@
 
 (s/defmethod execute-instruction! :SYSCALL
   [_ storage coproc-storage]
-  (db.simulation-summary/inc-instructions-count :R)
+  (db.simulation-summary/inc-instructions-summary :R)
   (c.syscall/execute! storage coproc-storage))
 
 (s/defmethod execute-instruction! :NOP [_ _ _]
-  (db.simulation-summary/inc-instructions-count :R))
+  (db.simulation-summary/inc-instructions-summary :R))
 
 (s/defmethod execute-instruction! :FR
   [instruction :- m.instruction/FRInstruction
