@@ -39,9 +39,11 @@
 
 (s/defmethod execute-instruction! :SYSCALL
   [_ storage coproc-storage]
+  (db.simulation-summary/inc-instructions-count :R)
   (c.syscall/execute! storage coproc-storage))
 
-(s/defmethod execute-instruction! :NOP [_ _ _])
+(s/defmethod execute-instruction! :NOP [_ _ _]
+  (db.simulation-summary/inc-instructions-count :R))
 
 (s/defmethod execute-instruction! :FR
   [instruction :- m.instruction/FRInstruction
