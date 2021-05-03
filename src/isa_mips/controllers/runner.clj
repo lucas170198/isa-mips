@@ -55,7 +55,6 @@
 (defn run-instruction!
   ([storage coproc-storage] (run-instruction! @db.registers/pc storage coproc-storage))
   ([addr storage coproc-storage]
-   (println (str "addr: " (l.binary/bin->hex-str (Integer/toBinaryString addr))))
    (-> addr
        (db.registers/read-reg-value! storage)
        (l.instructions/decode-binary-instruction)
