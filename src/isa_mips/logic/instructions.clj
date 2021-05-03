@@ -3,6 +3,15 @@
             [isa-mips.models.instruction :as m.instruction]
             [isa-mips.logic.binary :as l.binary]))
 
+(s/defn ^:private bltz-gez
+  [binary-string]
+  {:format    :I
+   :op        (subs binary-string 11 16) ;Especial case for i-format
+   :rs        (subs binary-string 6 11)
+   :rt        (subs binary-string 11 16)
+   :immediate (subs binary-string 16 32)
+   :hex       (l.binary/bin->hex-str binary-string)})
+
 (s/defn ^:private R-format-instruction
   [binary-string]
   {:format :R
@@ -58,6 +67,9 @@
     (= (subs binary-string 0 6) "010001")
     (FR-format-instruction binary-string)
 
+    (= (subs binary-string 0 6) "000001")
+    (bltz-gez binary-string)
+
     (= (subs binary-string 0 3) "001")
     (I-format-instruction binary-string)
 
@@ -69,6 +81,9 @@
     (I-format-instruction binary-string)
 
     (= (subs binary-string 0 3) "110")
+    (I-format-instruction binary-string)
+
+    (= (subs binary-string 0 3) "111")
     (I-format-instruction binary-string)
 
     (= (subs binary-string 0 4) "0001")

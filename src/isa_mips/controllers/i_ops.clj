@@ -185,6 +185,30 @@
     (when (<= (a.number-base/bin->numeric rs-bin) 0)
       (db.registers/sum-jump-addr! immediate-value))))
 
+(s/defn ^:private branch-on-greater-then-zero!
+  [_ :- s/Str
+   reg :- s/Str
+   immediate :- s/Str
+   storage :- p-storage/IStorageClient
+   -]
+  (let [rs-bin          (db.registers/read-reg-value! (a.number-base/bin->numeric reg) storage)
+        branch-addr     (l.binary/signal-extend-32bits (str immediate "00"))
+        immediate-value (a.number-base/bin->numeric branch-addr)]
+    (when (>= (a.number-base/bin->numeric rs-bin) 0)
+      (db.registers/sum-jump-addr! immediate-value))))
+
+(s/defn ^:private store-word-float!
+  [destiny-reg :- s/Str
+   reg :- s/Str
+   immediate :- s/Str
+   storage :- p-storage/IStorageClient
+   coproc1 :- p-storage/IStorageClient]
+  (let [destiny-value (db.coproc1/read-value! (a.number-base/bin->numeric destiny-reg) coproc1)
+        offset        (l.binary/signal-extend-32bits immediate)
+        reg-bin       (db.coproc1/read-value! (a.number-base/bin->numeric reg) storage)
+        target-addr   (l.binary/sum reg-bin offset)]
+    (db.registers/write-value! target-addr destiny-value storage)))
+
 (s/def i-table
   {"001000" {:str "addi" :action addi!}
    "001001" {:str "addiu" :action addiu! :unsigned true}
@@ -199,7 +223,9 @@
    "110001" {:str "lwc1" :action load-word-float! :coproc1 true :memory-op true}
    "110101" {:str "ldc1" :action load-word-double! :coproc1 true :memory-op true}
    "100000" {:str "lb" :action load-byte! :memory-op true}
-   "000110" {:str "blez" :action branch-equal-less-zero!}})
+   "000110" {:str "blez" :action branch-equal-less-zero!}
+   "00001"  {:str "bgez" :action branch-on-greater-then-zero!}
+   "111001" {:str "swc1" :action store-word-float! :memory-op true}})
 
 (s/defn operation-str! :- s/Str
   [{op-code :op
@@ -208,12 +234,12 @@
     immediate :immediate} :- m.instruction/IInstruction
    storage :- p-storage/IStorageClient
    coproc-storage :- p-storage/IStorageClient]
-  (let [operation        (get i-table (subs op-code 0 6))
+  (let [operation        (get i-table op-code)
         func-name        (:str operation)
         _assert          (assert (not (nil? func-name)) (str "Operation not found on i-table: " op-code))
         num-destiny-reg  (a.number-base/bin->numeric destiny-reg)
         destiny-reg-name (if (:coproc1 operation) (db.coproc1/read-name! num-destiny-reg coproc-storage)
-                                                  (db.registers/read-name! num-destiny-reg coproc-storage))
+                                                  (db.registers/read-name! num-destiny-reg storage))
         reg-name         (when-not (:load-inst operation) (db.registers/read-name! (a.number-base/bin->numeric reg) storage))
         unsigned?        (:unsigned operation)
         memory-op?       (:memory-op operation)
@@ -224,10 +250,10 @@
 
 (s/defn execute!
   [{op-code     :op
-    destiny-reg :rt
     reg         :rs
+    destiny-reg :rt
     immediate   :immediate} :- m.instruction/IInstruction
    storage :- p-storage/IStorageClient
    coproc-storage :- p-storage/IStorageClient]
-  (let [func-fn (get-in i-table [(subs op-code 0 6) :action])]
+  (let [func-fn (get-in i-table [op-code :action])]
     (func-fn destiny-reg reg immediate storage coproc-storage)))
