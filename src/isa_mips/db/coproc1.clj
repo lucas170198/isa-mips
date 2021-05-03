@@ -28,7 +28,7 @@
    coproc1-storage :- p-storage/IStorageClient]
   (storage-client/read-name! coproc1-storage address))
 
-(s/defn write-value! :- (s/maybe m.memory/Store)
+(s/defn write-value! :- (s/maybe m.memory/Registers)
   [address :- s/Int
    value :- m.instruction/fourBytesString
    coproc1-storage :- p-storage/IStorageClient]

@@ -3,7 +3,7 @@
             [isa-mips.controllers.r-ops :as c.r-ops]
             [isa-mips.models.instruction :as m.instruction]
             [isa-mips.db.registers :as db.registers]
-            [isa-mips.db.simulation-summary :as db.simulation-summary]
+            [isa-mips.db.stats :as db.stats]
             [isa-mips.logic.instructions :as l.instructions]
             [isa-mips.controllers.i-ops :as c.i-ops]
             [isa-mips.controllers.syscall :as c.syscall]
@@ -14,7 +14,7 @@
 (defmulti execute-instruction! "Return nil for success execution"
           (fn [{format :format} _ _]
             (when (contains? #{:R :I :J :FR :FI} format)
-              (db.simulation-summary/inc-instructions-summary format))
+              (db.stats/inc-instructions-summary format))
             format))
 
 (s/defmethod execute-instruction! :R
@@ -39,11 +39,11 @@
 
 (s/defmethod execute-instruction! :SYSCALL
   [_ storage coproc-storage]
-  (db.simulation-summary/inc-instructions-summary :R)
+  (db.stats/inc-instructions-summary :R)
   (c.syscall/execute! storage coproc-storage))
 
 (s/defmethod execute-instruction! :NOP [_ _ _]
-  (db.simulation-summary/inc-instructions-summary :R))
+  (db.stats/inc-instructions-summary :R))
 
 (s/defmethod execute-instruction! :FR
   [instruction :- m.instruction/FRInstruction

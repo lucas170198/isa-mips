@@ -31,7 +31,7 @@
    registers-storage :- p-storage/IStorageClient]
   (storage-client/read-name! registers-storage address))
 
-(s/defn write-value! :- (s/maybe m.memory/Store)
+(s/defn write-value! :- (s/maybe m.memory/Registers)
   [address :- s/Int
    value :- m.instruction/fourBytesString
    registers-storage :- p-storage/IStorageClient]

@@ -64,14 +64,14 @@
         k-reg    (register-class "$k" 26 (range 2))]
     (->> (concat statics v-reg a-reg t-reg s-reg temp-reg k-reg pointers)
          vec
-         (s/validate m.memory/Store)
+         (s/validate m.memory/Registers)
          (atom)
          ->RegistersMemory)))
 
 (defn new-coproc1-storage!
   []
   (->> (vec (register-class "$f" 0 (range 32)))
-       (s/validate m.memory/Store)
+       (s/validate m.memory/Registers)
        (atom)
        ->RegistersMemory))
 

@@ -1,4 +1,4 @@
-(ns isa-mips.db.simulation-summary
+(ns isa-mips.db.stats
   (:require [schema.core :as s]))
 
 
