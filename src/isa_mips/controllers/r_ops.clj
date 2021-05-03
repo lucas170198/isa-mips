@@ -34,6 +34,19 @@
         result  (l.binary/sum rs-bin rt-bin)]
     (db.registers/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32) storage)))
 
+(s/defn ^:private subu!
+  [rd :- s/Str
+   rs :- s/Str
+   rt :- s/Str
+   _ :- s/Str
+   storage :- p-storage/IStorageClient
+   _]
+  (let [rd-addr (a.number-base/bin->numeric rd)
+        rs-bin  (db.registers/read-reg-value! (a.number-base/bin->numeric rs) storage)
+        rt-bin  (db.registers/read-reg-value! (a.number-base/bin->numeric rt) storage)
+        result  (l.binary/sub rs-bin rt-bin)]
+    (db.registers/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32) storage)))
+
 (s/defn ^:private set-less-than!
   [rd :- s/Str
    rs :- s/Str
@@ -202,6 +215,19 @@
                        (a.number-base/bin->numeric rt-bin)) 1 0)]
     (db.registers/write-value! rd-addr (a.number-base/binary-string-zero-extend result 32) storage)))
 
+(s/defn ^:private shift-right-arithmetic!
+  [rd :- s/Str
+   _ :- s/Str
+   rt :- s/Str
+   shamt :- s/Str
+   storage :- p-storage/IStorageClient
+   _]
+  (let [rd-addr     (a.number-base/bin->numeric rd)
+        rt-bin      (db.registers/read-reg-value! (a.number-base/bin->numeric rt) storage)
+        shamt-value (a.number-base/bin->numeric shamt)
+        result      (bit-shift-right (a.number-base/bin->numeric rt-bin) shamt-value)]
+    (db.registers/write-value! rd-addr (a.number-base/binary-string-signal-extend result 32) storage)))
+
 (s/def r-table
   {"100000" {:str "add" :action add!}
    "100001" {:str "addu" :action addu! :unsigned true}
@@ -218,7 +244,9 @@
    "001101" {:str "break" :action (constantly nil) :hide-destiny-reg true :hide-second-reg true :hide-first-reg true}
    "100110" {:str "xor" :action xor!}
    "100100" {:str "and" :action and!}
-   "101011" {:str "sltu" :action set-less-than-u!}})
+   "101011" {:str "sltu" :action set-less-than-u!}
+   "100011" {:str "subu" :action subu!}
+   "000011" {:str "sra" :action shift-right-arithmetic!}})
 
 (s/defn operation-str! :- s/Str
   [{func :funct

@@ -48,7 +48,7 @@
   ([x]
    (binary-string-signal-extend x 8))
   ([x n]
-   (let [bin (Integer/toBinaryString x)
+   (let [bin (Long/toBinaryString x)
          bin-sig (if (pos? x) ;putting the right signal
                    (str "0" bin)
                    bin)]
