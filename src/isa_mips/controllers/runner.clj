@@ -9,8 +9,7 @@
             [isa-mips.controllers.syscall :as c.syscall]
             [isa-mips.controllers.j-ops :as c.j-ops]
             [isa-mips.controllers.fr-ops :as c.fr-ops]
-            [isa-mips.protocols.storage-client :as p-storage]
-            [isa-mips.logic.binary :as l.binary]))
+            [isa-mips.protocols.storage-client :as p-storage]))
 
 (defmulti execute-instruction! "Return nil for success execution"
           (fn [{format :format} _ _]

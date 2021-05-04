@@ -10,6 +10,16 @@
 
 (def lo (atom (a.number-base/binary-string-zero-extend 0)))
 
+(def condition-flag (atom false))
+
+(defn set-condition-flag!
+  []
+  (reset! condition-flag true))
+
+(defn reset-condition-flag!
+  []
+  (reset! condition-flag false))
+
 (s/defn set-hi!
   [hi-value :- s/Str]
   (reset! hi hi-value))

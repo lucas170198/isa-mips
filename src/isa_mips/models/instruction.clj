@@ -11,7 +11,8 @@
   (abstract-map/abstract-map-schema
    :format
    {(s/optional-key :op) (bitString 6)
-    (s/optional-key :hex) (bitString 32)}))
+    (s/optional-key :hex) (bitString 32)
+    (s/optional-key :bin) (bitString 32)}))
 
 (abstract-map/extend-schema RInstruction BaseInstruction [:R] {:rs    (bitString 5)
                                                                :rt    (bitString 5)

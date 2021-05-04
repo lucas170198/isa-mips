@@ -6,11 +6,12 @@
 (s/defn ^:private bltz-gez
   [binary-string]
   {:format    :I
-   :op        (subs binary-string 11 16) ;Especial case for i-format
+   :op        (subs binary-string 11 16)                    ;Especial case for i-format
    :rs        (subs binary-string 6 11)
    :rt        (subs binary-string 11 16)
    :immediate (subs binary-string 16 32)
-   :hex       (l.binary/bin->hex-str binary-string)})
+   :hex       (l.binary/bin->hex-str binary-string)
+   :bin       binary-string})
 
 (s/defn ^:private R-format-instruction
   [binary-string]
@@ -21,7 +22,8 @@
    :rd     (subs binary-string 16 21)
    :shamt  (subs binary-string 21 26)
    :funct  (subs binary-string 26 32)
-   :hex    (l.binary/bin->hex-str binary-string)})
+   :hex    (l.binary/bin->hex-str binary-string)
+   :bin    binary-string})
 
 (s/defn ^:private I-format-instruction
   [binary-string]
@@ -30,14 +32,16 @@
    :rs        (subs binary-string 6 11)
    :rt        (subs binary-string 11 16)
    :immediate (subs binary-string 16 32)
-   :hex       (l.binary/bin->hex-str binary-string)})
+   :hex       (l.binary/bin->hex-str binary-string)
+   :bin       binary-string})
 
 (s/defn ^:private J-format-instruction
   [binary-string]
   {:format         :J
    :op             (subs binary-string 0 6)
    :target-address (subs binary-string 6 32)
-   :hex            (l.binary/bin->hex-str binary-string)})
+   :hex            (l.binary/bin->hex-str binary-string)
+   :bin            binary-string})
 
 (s/defn ^:private FR-format-instruction
   [binary-string]
@@ -48,7 +52,8 @@
    :fs     (subs binary-string 16 21)
    :fd     (subs binary-string 21 26)
    :funct  (subs binary-string 26 32)
-   :hex    (l.binary/bin->hex-str binary-string)})
+   :hex    (l.binary/bin->hex-str binary-string)
+   :bin    binary-string})
 
 (s/defn decode-binary-instruction :- m.instruction/BaseInstruction
   [binary-string]
