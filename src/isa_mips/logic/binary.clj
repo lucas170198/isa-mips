@@ -35,7 +35,7 @@
 
 (defn sum
   [reg1 reg2]
-  (+ (Integer/parseUnsignedInt  reg1 2) (Integer/parseUnsignedInt  reg2 2)))
+  (+ (Integer/parseUnsignedInt reg1 2) (Integer/parseUnsignedInt reg2 2)))
 
 (defn sub
   [reg1 reg2]

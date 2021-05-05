@@ -7,6 +7,7 @@
 (defn -main
   [& args]
   (let [action-type    (a.file-input/action->action-type (first args))
+        memory         (c-storage/new-memory (if (= (count args) 3) (second args) 1))
         storage        (c-storage/new-register-storage!)
         coproc-storage (c-storage/new-coproc1-storage!)
         text-section   (a.file-input/file->bytes (last args) "text")
@@ -16,4 +17,4 @@
                             (vec text-section)
                             (vec data-section)
                             (vec rodata-section)
-                            storage coproc-storage)))
+                            storage coproc-storage memory)))

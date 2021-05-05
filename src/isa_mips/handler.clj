@@ -8,19 +8,19 @@
             [isa-mips.controllers.rodata-section :as c.rodata-section]))
 
 (defmulti execute-action
-          (fn [type _text _data _rodata _storage _coprcc-storage] type))
+          (fn [type _text _data _rodata _storage _coprcc-storage _memory] type))
 
 (defmethod execute-action :decode
-  [_ text _ _ storage coproc-storage]
+  [_ text _ _ storage coproc-storage _]
   (->> (a.file-input/byte-array->binary-instruction-array text)
        (map l.instructions/decode-binary-instruction)
        (c.decode/print-instructions! storage coproc-storage)))
 
 (defmethod execute-action :run
-  [_ text data rodata storage coproc-storage]
-  (c.data-section/store-data-section! data storage)
-  (c.rodata-section/store-rodata-section! rodata storage)
+  [_ text data rodata registers coproc-storage memory]
+  (c.data-section/store-data-section! data memory)
+  (c.rodata-section/store-rodata-section! rodata memory)
   (c.text-section/store-text-section!
    (a.file-input/byte-array->binary-instruction-array text)
-   storage)
-  (c.runner/run-program! storage coproc-storage))
+   memory)
+  (c.runner/run-program! registers coproc-storage memory))

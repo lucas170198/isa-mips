@@ -33,6 +33,18 @@
   [storage]
   @storage)
 
+(defn ^:private read-from-storage
+  [storage address]
+  (-> (get-db storage)
+      (get-by-address address)
+      (get-in [:meta :value])))
+
+(defn ^:private write-to-storage!
+  [storage address value]
+  (if (nil? (get-by-address @storage address))
+    (swap! storage conj {:addr address :meta {:value value}})
+    (reset! storage (update-if (get-db storage) value [:meta :value] #(= (:addr %) address)))))
+
 (defrecord RegistersMemory [storage]
   storage-client/StorageClient
   (read-value-by-name! [_this reg-name]
@@ -42,12 +54,10 @@
     (-> (get-db storage) (get-by-address address) (get-in [:meta :name])))
 
   (read-value! [_this address]
-    (-> (get-db storage) (get-by-address address) (get-in [:meta :value])))
+    (read-from-storage storage address))
 
   (write-value! [_this address value]
-    (if (nil? (get-by-address @storage address))
-      (swap! storage conj {:addr address :meta {:value value}})
-      (reset! storage (update-if (get-db storage) value [:meta :value] #(= (:addr %) address))))))
+    (write-to-storage! storage address value)))
 
 (defn new-register-storage! []
   (let [pointers (list {:addr 28 :meta {:name "$gp" :value (a.number-base/binary-string-zero-extend 0x10008000 32)}}
@@ -74,5 +84,37 @@
        (s/validate m.memory/Registers)
        (atom)
        ->RegistersMemory))
+
+(defn- mem-index
+  [number-of-lines address]
+  (mod address number-of-lines))
+
+(defrecord Memory [storage config-map]
+  storage-client/StorageClient
+
+  (read-value! [_this address]
+    (if (= (:type config-map :main))
+      (read-from-storage storage address)))
+
+  (write-value! [this address value]
+    (storage-client/write-value! this address value false))
+
+  (write-value! [_this address value instruction?]
+    (if (or (= (:type config-map :main)) (not instruction?))
+      (write-to-storage! storage address value)
+      (storage-client/write-value! (:next-level-ref config-map) address value instruction?))))
+
+(defn ^:private mem-config
+  [config-mode]
+  (condp = config-mode
+    1 {:level 0
+       :type :main}
+
+    :else (println "deu ruim")))
+
+(defn new-memory
+  [config-mode]
+  (let [config-map (mem-config config-mode)]
+    (->Memory (atom []) config-map)))
 
 

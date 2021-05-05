@@ -18,14 +18,6 @@
    registers-storage :- p-storage/IStorageClient]
   (storage-client/read-value! registers-storage address))
 
-(s/defn read-value!
-  [initial-address :- s/Int
-   registers-storage :- p-storage/IStorageClient]
-  (-> #(storage-client/read-value! registers-storage %)
-      (mapv (range initial-address (+ initial-address 4)))
-      reverse
-      str/join))
-
 (s/defn read-name!
   [address :- s/Int
    registers-storage :- p-storage/IStorageClient]
