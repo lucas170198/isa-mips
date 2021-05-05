@@ -59,7 +59,6 @@
 (defn run-instruction!
   ([storage coproc-storage memory] (run-instruction! @db.registers/pc storage coproc-storage memory))
   ([addr registers coproc-storage memory]
-   #_(println "PCZEIRA" (Integer/toHexString addr))
    (-> addr
        (db.memory/read-instruction! memory)
        (l.instructions/decode-binary-instruction)

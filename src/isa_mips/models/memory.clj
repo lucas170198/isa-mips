@@ -9,20 +9,17 @@
 
 (def Registers [reg-skeleton])
 
-(def cache-type (s/enum :unified :split :main))
 
-(def level-type (s/enum :i :d))
+(def level-type (s/enum :L1 :L1i :L1d :L2 :RAM))
 
-(def MemConfig {:level                           s/Int
-                :type                            cache-type
+(def MemConfig {:level                           level-type
                 (s/optional-key :size)           s/Int
-                (s/optional-key :level-type)     level-type
                 (s/optional-key :assoc-param)    s/Int
                 (s/optional-key :line-size)      s/Int
                 (s/optional-key :next-level-ref) storage-client/IStorageClient})
 
 (def memory-data {:value                  s/Str
-                  (s/optional-key :block) s/Int
+                  (s/optional-key :set) s/Int
                   (s/optional-key :valid) s/Bool
                   (s/optional-key :dirty) s/Bool
                   (s/optional-key :tag)   s/Str})
@@ -31,15 +28,7 @@
 
 (def Memory [memory-skeleton])
 
-;Conf 2:
-; L1: U-cache -> 32 linhas / 1 bloco [{index: 0 - 31 (5 bits), valid (bool), dirty (bool), tag (27 bits)}]
-
-; Conf 5:
-; L1 : I-cache -> 4 linhas / 4 blocos [{index: 0 - 31 (5 bits), valid (bool), dirty (bool), tag (27 bits)} ... {index: 0 - 31 (5 bits), valid (bool), dirty (bool), tag (27 bits)}] (size 4)
-; L1 : D-cache -> 4 linhas / 4 blocos [{index: 0 - 31 (5 bits), valid (bool), dirty (bool), tag (27 bits)} ... {index: 0 - 31 (5 bits), valid (bool), dirty (bool), tag (27 bits)}] (size 4)
-
-
-; Conf 5:
-; L1 : I-cache -> 4 linhas / 4 blocos [{index: 0 - 31 (5 bits), valid (bool), dirty (bool), tag (27 bits)} ... {index: 0 - 31 (5 bits), valid (bool), dirty (bool), tag (27 bits)}] (size 4)
-; L1 : D-cache -> 4 linhas / 4 blocos [{index: 0 - 31 (5 bits), valid (bool), dirty (bool), tag (27 bits)} ... {index: 0 - 31 (5 bits), valid (bool), dirty (bool), tag (27 bits)}] (size 4)
-; L2:  U-cache -> 8 linhas / 8 bloco [{index: 0 - 31 (5 bits), valid (bool), dirty (bool), tag (27 bits)}]
+(def DecodedAddress  {:byte-offset  s/Str
+                      :block-offset s/Str
+                      :index        s/Str
+                      :tag          s/Str})

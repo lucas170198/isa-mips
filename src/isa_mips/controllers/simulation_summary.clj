@@ -38,6 +38,20 @@
     (print-time-stats pipelined)
     (println (str "Speedup Monocycle/Pipelined: " speedup-times "X"))))
 
+(s/defn ^:private with-total
+  [summary]
+  (map (fn [{hits :Hits misses :Misses :as base}]
+         (assoc base :Total (+ hits misses))) summary))
+
+(s/defn ^:private with-rate
+  [summary]
+  (map (fn [{total :Total misses :Misses :as base}]
+         (assoc base :Miss-rate (float (/ misses total)))) summary))
+
+(s/defn ^:private print-memory-summary!
+  []
+  (clojure.pprint/print-table (-> @db.stats/mem-summary with-total with-rate)))
+
 (s/defn print-stats!
   []
   (println "Execution finished successfully")
@@ -49,6 +63,7 @@
   (print-times-summary!)
   (println)
   (println "Memory information:")
-  (println "-------------------"))
+  (println "-------------------")
+  (print-memory-summary!))
 
 
