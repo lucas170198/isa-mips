@@ -104,17 +104,26 @@
       (write-to-storage! storage address value)
       (storage-client/write-value! (:next-level-ref config-map) address value instruction?))))
 
+(defn ^:primary empty-mem [] (atom []))
+
+(def ^:private main-memory-config {:level 0 :type :main})
+
+(def ^:private l1-cache-config
+  {:level 1 :type :unified :assoc-param 1 :size 1024 :line-size 32
+   :next-level-ref (->Memory (empty-mem) main-memory-config)})
+
 (defn ^:private mem-config
   [config-mode]
   (condp = config-mode
-    1 {:level 0
-       :type :main}
+    1 main-memory-config
+
+    2 l1-cache-config
 
     :else (println "deu ruim")))
 
 (defn new-memory
   [config-mode]
   (let [config-map (mem-config config-mode)]
-    (->Memory (atom []) config-map)))
+    (->Memory (empty-mem) config-map)))
 
 

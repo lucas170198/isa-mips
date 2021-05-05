@@ -11,9 +11,12 @@
 
 (def cache-type (s/enum :unified :split :main))
 
+(def level-type (s/enum :i :d))
+
 (def MemConfig {:level                           s/Int
                 :type                            cache-type
                 (s/optional-key :size)           s/Int
+                (s/optional-key :level-type)     level-type
                 (s/optional-key :assoc-param)    s/Int
                 (s/optional-key :line-size)      s/Int
                 (s/optional-key :next-level-ref) storage-client/IStorageClient})
