@@ -33,18 +33,18 @@
     (print (a.number-base/bin->double double-string)))
   (flush))
 
-(s/defn ^:private printable-array! [storage memory]
+(s/defn ^:private printable-array! [storage memory tracer]
   (loop [addr  (a.number-base/bin->numeric (db.registers/read-value-by-name! "$a0" storage))
          array '()]
-    (let [character (a.number-base/bin->numeric (db.memory/read-byte! addr memory))]
+    (let [character (a.number-base/bin->numeric (db.memory/read-byte! addr memory tracer))]
       (if (= character 0)
         array
         (recur (inc addr)
                (concat array (list (char character))))))))
 
 (defn print-string!
-  [storage memory]
-  (->> (printable-array! storage memory)
+  [storage memory tracer]
+  (->> (printable-array! storage memory tracer)
        (apply str)
        print)
   (flush))
@@ -76,13 +76,13 @@
 
 
 (s/defn execute!
-  [storage coproc-storage memory]
+  [storage coproc-storage memory tracer]
   (let [syscall-code (a.number-base/bin->numeric (db.registers/read-value-by-name! "$v0" storage))]
     (case syscall-code
       1 (print-int! storage)
       2 (print-float! coproc-storage)
       3 (print-double! coproc-storage)
-      4 (print-string! storage memory)
+      4 (print-string! storage memory tracer)
       5 (read-integer! storage)
       6 (read-float! coproc-storage)
       7 (read-double! coproc-storage)

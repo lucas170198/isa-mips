@@ -1,9 +1,11 @@
 (ns isa-mips.components.memory-storage
   (:require [isa-mips.adapters.number-base :as a.number-base]
             [isa-mips.protocols.storage-client :as storage-client]
+            [isa-mips.protocols.logger :as logger]
             [isa-mips.logic.memory :as l.memory]
             [isa-mips.components.db-commons :as db-commons]
-            [isa-mips.db.stats :as db.stats]))
+            [isa-mips.db.stats :as db.stats]
+            [clojure.string :as str]))
 
 (defn ^:private write-to-cache!
   [storage index value set tag]
@@ -26,14 +28,26 @@
     memory-value))
 
 
-; Read from different strategies
+; READ BYTE
+(defmulti read-byte-mem! (fn [mem _ _] (:level (.config_map mem))))
+
+(defmethod read-byte-mem! :RAM
+  [mem address _]
+  (db.stats/hit-memory-by-level! :RAM)
+  (db-commons/read-value-from-storage (.storage mem) address))
+
+
+; READ 4 BYTES VALUE
 
 (defmulti read-value-mem! (fn [mem _ _] (:level (.config_map mem))))
 
 (defmethod read-value-mem! :RAM
   [mem address _]
   (db.stats/hit-memory-by-level! :RAM)
-  (db-commons/read-value-from-storage (.storage mem) address))
+  (-> #(db-commons/read-value-from-storage (.storage mem) %)
+      (mapv (range address (+ address 4)))
+      reverse
+      str/join))
 
 (defmethod read-value-mem! :L1
   [mem address _]
@@ -43,12 +57,13 @@
         cache-line         (l.memory/search-by-tag cache-block tag)]
     (if (nil? cache-line)
       (miss! mem address decoded)
-      (hit! (get-in cache-line [:meta :value]) block-offset))))
+      (hit! mem (get-in cache-line [:meta :value]) block-offset))))
 
 
-; Write from different strategies
+; WRITE 4 BYTES VALUE
 
-(defmulti write-value-mem! (fn [mem _storage _address _value _instruction?] (:level (.config_map mem))))
+(defmulti write-value-mem! (fn [mem _storage _address _value _instruction?]
+                             (:level (.config_map mem))))
 
 (defmethod write-value-mem! :RAM
   [_mem storage address value _instruction?]
@@ -69,6 +84,12 @@
 
   (read-value! [this address instruction?]
     (read-value-mem! this address instruction?))
+
+  (read-byte! [this address]
+    (storage-client/read-byte! this address false))
+
+  (read-byte! [this address instruction?]
+    (read-byte-mem! this address instruction?))
 
   (write-value! [this address value]
     (storage-client/write-value! this address value false))
