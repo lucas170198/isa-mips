@@ -20,4 +20,5 @@
     (log! address index "W" file-path)))
 
 (defn new-tracer [file-path]
+  (io/delete-file file-path true)
   (->Tracer file-path))
