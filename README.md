@@ -6,15 +6,7 @@ ______________
 ## Autor
 **Nome** : Lucas Silva Amorim
 
-**RA** : 11201720968
-
-**Email**: amorim.l@aluno.ufabc.edu.br
-
 **Github** : [lucas170198](https://github.com/lucas170198/)
-
-**Video apresentação fase 1** : https://youtu.be/pDHdNKodye4
-
-**Vídeo apresentação fase 2** : https://youtu.be/0Q-0FduDawM (desculpe o tamanho do vídeo, acabou ficando com 1 minuto a mais e não consegui reduzir :( )
  ______________
 ## Sobre o código
 1) A linguagem escolhida para implementação foi o **clojure**, por questões de afinidade com a linguagem e por técnicas interessantes que o paradigma funcional adiciona a essa solução.
